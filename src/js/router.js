@@ -98,6 +98,107 @@ import {
   renderProductionCycleDetailPage,
 } from '../pages/plantings/productionCycleDetail.js';
 
+import {
+  renderProductionEventFormPage,
+} from '../pages/plantings/productionEventForm.js';
+
+import {
+  renderEvolutionPage,
+} from '../pages/plantings/evolution.js';
+
+import {
+  renderEvolutionPhotoFormPage,
+} from '../pages/plantings/evolutionPhotoForm.js';
+
+import {
+  renderEventInputFormPage,
+} from '../pages/plantings/eventInputForm.js';
+
+import {
+  renderInputFormPage,
+} from '../pages/inventory/inputForm.js';
+
+import {
+  renderInputDetailPage,
+} from '../pages/inventory/inputDetail.js';
+
+
+import {
+  renderInventoryLotsPage,
+} from '../pages/inventory/lots.js';
+
+import {
+  renderInventoryLotFormPage,
+} from '../pages/inventory/lotForm.js';
+
+import {
+  renderInventoryLotDetailPage,
+} from '../pages/inventory/lotDetail.js';
+
+import {
+  renderInventoryTransactionsPage,
+} from '../pages/inventory/inventoryTransactions.js';
+
+import {
+  renderInventoryTransactionFormPage,
+} from '../pages/inventory/inventoryTransactionForm.js';
+
+import {
+  renderInventoryTransactionDetailPage,
+} from '../pages/inventory/inventoryTransactionDetail.js';
+
+import {
+  renderConsultantsPage,
+} from '../pages/consultants/consultants.js';
+
+import {
+  renderConsultantFormPage,
+} from '../pages/consultants/consultantForm.js';
+
+import {
+  renderConsultantDetailPage,
+} from '../pages/consultants/consultantDetail.js';
+
+import {
+  renderHarvestForecastPage,
+} from '../pages/harvest-forecast/harvestForecast.js';
+
+import {
+  renderSettingsPage,
+} from '../pages/settings/settings.js';
+
+import {
+  renderHarvestsPage,
+} from '../pages/harvests/harvests.js';
+
+import {
+  renderHarvestFormPage,
+} from '../pages/harvests/harvestForm.js';
+
+import {
+  renderHarvestDetailPage,
+} from '../pages/harvests/harvestDetail.js';
+
+import {
+  renderSalesPage,
+} from '../pages/sales/sales.js';
+
+import {
+  renderSaleFormPage,
+} from '../pages/sales/saleForm.js';
+
+import {
+  renderSaleDetailPage,
+} from '../pages/sales/saleDetail.js';
+
+import {
+  renderFinancePage,
+} from '../pages/finance/finance.js';
+
+import {
+  renderCycleFinanceDetailPage,
+} from '../pages/finance/cycleFinanceDetail.js';
+
 const privateRoute = (render) => ({
   render,
   requiresAuth: true,
@@ -163,6 +264,26 @@ const routes = {
       renderInventoryPage,
     ),
 
+  '/inventory/new':
+    privateRoute(
+      (context) =>
+        renderInputFormPage({
+          ...context,
+          mode: 'create',
+        }),
+    ),
+
+
+  '/inventory/transactions':
+    privateRoute(
+      renderInventoryTransactionsPage,
+    ),
+
+  '/inventory/transactions/new':
+    privateRoute(
+      renderInventoryTransactionFormPage,
+    ),
+
   '/more':
     privateRoute(
       renderMorePage,
@@ -198,66 +319,59 @@ const routes = {
 
   '/more/consultants':
     privateRoute(
+      renderConsultantsPage,
+    ),
+
+  '/more/consultants/new':
+    privateRoute(
       (context) =>
-        renderFeaturePlaceholder({
+        renderConsultantFormPage({
           ...context,
-          title: 'Consultores',
-          description:
-            'Aqui ficarão os contatos agrícolas e a futura integração com WhatsApp.',
-          iconName: 'users',
-          stage: 17,
+          mode: 'create',
         }),
+    ),
+
+  '/more/harvest-forecast':
+    privateRoute(
+      renderHarvestForecastPage,
     ),
 
   '/more/harvests':
     privateRoute(
+      renderHarvestsPage,
+    ),
+
+  '/more/harvests/new':
+    privateRoute(
       (context) =>
-        renderFeaturePlaceholder({
+        renderHarvestFormPage({
           ...context,
-          title: 'Colheitas',
-          description:
-            'Cada ciclo poderá registrar uma ou várias colheitas.',
-          iconName: 'harvest',
-          stage: 21,
+          mode: 'create',
         }),
     ),
 
   '/more/sales':
     privateRoute(
+      renderSalesPage,
+    ),
+
+  '/more/sales/new':
+    privateRoute(
       (context) =>
-        renderFeaturePlaceholder({
+        renderSaleFormPage({
           ...context,
-          title: 'Vendas',
-          description:
-            'As vendas serão ligadas às colheitas e calcularão o valor total automaticamente.',
-          iconName: 'cart',
-          stage: 22,
+          mode: 'create',
         }),
     ),
 
   '/more/finance':
     privateRoute(
-      (context) =>
-        renderFeaturePlaceholder({
-          ...context,
-          title: 'Financeiro',
-          description:
-            'Custos de insumos, receitas e resultados dos ciclos serão consolidados aqui.',
-          iconName: 'chart',
-          stage: 23,
-        }),
+      renderFinancePage,
     ),
 
   '/more/settings':
     privateRoute(
-      (context) =>
-        renderFeaturePlaceholder({
-          ...context,
-          title: 'Configurações',
-          description:
-            'Preferências, notificações e opções do aplicativo ficarão centralizadas aqui.',
-          iconName: 'settings',
-        }),
+      renderSettingsPage,
     ),
 
   '/more/profile':
@@ -267,6 +381,292 @@ const routes = {
 };
 
 const dynamicRoutes = [
+  {
+    regex:
+      /^\/more\/finance\/([^/]+)$/,
+    route:
+      privateRoute(
+        renderCycleFinanceDetailPage,
+      ),
+    paramNames: [
+      'cycleId',
+    ],
+  },
+  {
+    regex:
+      /^\/plantings\/([^/]+)\/harvests\/new$/,
+    route:
+      privateRoute(
+        (context) =>
+          renderHarvestFormPage({
+            ...context,
+            mode: 'create',
+          }),
+      ),
+    paramNames: [
+      'cycleId',
+    ],
+  },
+  {
+    regex:
+      /^\/more\/harvests\/([^/]+)\/sales\/new$/,
+    route:
+      privateRoute(
+        (context) =>
+          renderSaleFormPage({
+            ...context,
+            mode: 'create',
+          }),
+      ),
+    paramNames: [
+      'harvestId',
+    ],
+  },
+  {
+    regex:
+      /^\/more\/harvests\/([^/]+)\/edit$/,
+    route:
+      privateRoute(
+        (context) =>
+          renderHarvestFormPage({
+            ...context,
+            mode: 'edit',
+          }),
+      ),
+    paramNames: [
+      'harvestId',
+    ],
+  },
+  {
+    regex:
+      /^\/more\/harvests\/([^/]+)$/,
+    route:
+      privateRoute(
+        renderHarvestDetailPage,
+      ),
+    paramNames: [
+      'harvestId',
+    ],
+  },
+  {
+    regex:
+      /^\/more\/sales\/([^/]+)\/edit$/,
+    route:
+      privateRoute(
+        (context) =>
+          renderSaleFormPage({
+            ...context,
+            mode: 'edit',
+          }),
+      ),
+    paramNames: [
+      'saleId',
+    ],
+  },
+  {
+    regex:
+      /^\/more\/sales\/([^/]+)$/,
+    route:
+      privateRoute(
+        renderSaleDetailPage,
+      ),
+    paramNames: [
+      'saleId',
+    ],
+  },
+  {
+    regex:
+      /^\/more\/consultants\/([^/]+)\/edit$/,
+    route:
+      privateRoute(
+        (context) =>
+          renderConsultantFormPage({
+            ...context,
+            mode: 'edit',
+          }),
+      ),
+    paramNames: [
+      'consultantId',
+    ],
+  },
+  {
+    regex:
+      /^\/more\/consultants\/([^/]+)$/,
+    route:
+      privateRoute(
+        renderConsultantDetailPage,
+      ),
+    paramNames: [
+      'consultantId',
+    ],
+  },
+  {
+    regex:
+      /^\/plantings\/([^/]+)\/events\/([^/]+)\/inputs\/new$/,
+    route:
+      privateRoute(
+        renderEventInputFormPage,
+      ),
+    paramNames: [
+      'cycleId',
+      'eventId',
+    ],
+  },
+  {
+    regex:
+      /^\/plantings\/([^/]+)\/events\/new$/,
+    route:
+      privateRoute(
+        (context) =>
+          renderProductionEventFormPage({
+            ...context,
+            mode: 'create',
+          }),
+      ),
+    paramNames: [
+      'cycleId',
+    ],
+  },
+  {
+    regex:
+      /^\/plantings\/([^/]+)\/events\/([^/]+)\/edit$/,
+    route:
+      privateRoute(
+        (context) =>
+          renderProductionEventFormPage({
+            ...context,
+            mode: 'edit',
+          }),
+      ),
+    paramNames: [
+      'cycleId',
+      'eventId',
+    ],
+  },
+  {
+    regex:
+      /^\/plantings\/([^/]+)\/evolution\/new$/,
+    route:
+      privateRoute(
+        renderEvolutionPhotoFormPage,
+      ),
+    paramNames: [
+      'cycleId',
+    ],
+  },
+  {
+    regex:
+      /^\/plantings\/([^/]+)\/evolution$/,
+    route:
+      privateRoute(
+        renderEvolutionPage,
+      ),
+    paramNames: [
+      'cycleId',
+    ],
+  },
+  {
+    regex:
+      /^\/inventory\/transactions\/([^/]+)$/,
+    route:
+      privateRoute(
+        renderInventoryTransactionDetailPage,
+      ),
+    paramNames: [
+      'transactionId',
+    ],
+  },
+  {
+    regex:
+      /^\/inventory\/([^/]+)\/lots\/new$/,
+    route:
+      privateRoute(
+        (context) =>
+          renderInventoryLotFormPage({
+            ...context,
+            mode: 'create',
+          }),
+      ),
+    paramNames: [
+      'inputId',
+    ],
+  },
+  {
+    regex:
+      /^\/inventory\/([^/]+)\/lots\/([^/]+)\/edit$/,
+    route:
+      privateRoute(
+        (context) =>
+          renderInventoryLotFormPage({
+            ...context,
+            mode: 'edit',
+          }),
+      ),
+    paramNames: [
+      'inputId',
+      'lotId',
+    ],
+  },
+  {
+    regex:
+      /^\/inventory\/([^/]+)\/lots\/([^/]+)$/,
+    route:
+      privateRoute(
+        renderInventoryLotDetailPage,
+      ),
+    paramNames: [
+      'inputId',
+      'lotId',
+    ],
+  },
+  {
+    regex:
+      /^\/inventory\/([^/]+)\/lots$/,
+    route:
+      privateRoute(
+        renderInventoryLotsPage,
+      ),
+    paramNames: [
+      'inputId',
+    ],
+  },
+  {
+    regex:
+      /^\/inventory\/([^/]+)\/transactions$/,
+    route:
+      privateRoute(
+        renderInventoryTransactionsPage,
+      ),
+    paramNames: [
+      'inputId',
+    ],
+  },
+  {
+    regex:
+      /^\/inventory\/([^/]+)\/edit$/,
+    route:
+      privateRoute(
+        (context) =>
+          renderInputFormPage({
+            ...context,
+            mode: 'edit',
+          }),
+      ),
+    paramNames: [
+      'inputId',
+    ],
+  },
+  {
+    regex:
+      /^\/inventory\/([^/]+)$/,
+    route:
+      privateRoute(
+        renderInputDetailPage,
+      ),
+    paramNames: [
+      'inputId',
+    ],
+  },
   {
     regex:
       /^\/more\/crops\/([^/]+)\/edit$/,
@@ -654,10 +1054,34 @@ export async function renderRoute() {
         cleanup;
     }
 
-    window.scrollTo({
-      top: 0,
-      behavior: 'instant',
-    });
+    const hash =
+      window.location.hash;
+
+    if (hash) {
+      const target =
+        document.getElementById(
+          decodeURIComponent(
+            hash.slice(1),
+          ),
+        );
+
+      if (target) {
+        target.scrollIntoView({
+          block: 'start',
+          behavior: 'instant',
+        });
+      } else {
+        window.scrollTo({
+          top: 0,
+          behavior: 'instant',
+        });
+      }
+    } else {
+      window.scrollTo({
+        top: 0,
+        behavior: 'instant',
+      });
+    }
   } finally {
     rendering = false;
 

@@ -9,6 +9,17 @@ import {
   onAuthStateChange,
 } from '../services/authService.js';
 
+import {
+  bootstrapNotificationRuntime,
+  syncHarvestNotifications,
+} from '../services/notificationService.js';
+
+import {
+  initializeTheme,
+} from '../services/themeService.js';
+
+initializeTheme();
+
 onAuthStateChange((event) => {
   window.setTimeout(() => {
     if (
@@ -23,6 +34,21 @@ onAuthStateChange((event) => {
       );
 
       return;
+    }
+
+    if (
+      event ===
+      'SIGNED_IN'
+    ) {
+      void syncHarvestNotifications()
+        .catch(
+          (error) => {
+            console.warn(
+              'Não foi possível sincronizar lembretes após o login:',
+              error,
+            );
+          },
+        );
     }
 
     if (
@@ -54,3 +80,7 @@ onAuthStateChange((event) => {
 });
 
 initializeRouter();
+
+void bootstrapNotificationRuntime({
+  navigate,
+});

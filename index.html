@@ -13,6 +13,45 @@
     <meta name="theme-color" content="#1f5d3a" />
     <title>Meu Agro</title>
 
+    <script>
+      (() => {
+        try {
+          const storedTheme =
+            window.localStorage.getItem(
+              'meu-agro:appearance-theme',
+            );
+
+          const theme =
+            storedTheme === 'dark'
+              ? 'dark'
+              : 'light';
+
+          document.documentElement.dataset.theme =
+            theme;
+
+          document.documentElement.style.colorScheme =
+            theme;
+
+          const themeColor =
+            document.querySelector(
+              'meta[name="theme-color"]',
+            );
+
+          if (themeColor) {
+            themeColor.setAttribute(
+              'content',
+              theme === 'dark'
+                ? '#0f1511'
+                : '#1f5d3a',
+            );
+          }
+        } catch {
+          document.documentElement.dataset.theme =
+            'light';
+        }
+      })();
+    </script>
+
     <link rel="icon" href="data:," />
 
     <link rel="stylesheet" href="/src/css/reset.css" />
@@ -21,11 +60,24 @@
     <link rel="stylesheet" href="/src/css/components.css" />
     <link rel="stylesheet" href="/src/css/auth.css" />
     <link rel="stylesheet" href="/src/css/app-shell.css" />
+    <link rel="stylesheet" href="/src/css/dashboard.css" />
     <link rel="stylesheet" href="/src/css/properties.css" />
     <link rel="stylesheet" href="/src/css/areas.css" />
     <link rel="stylesheet" href="/src/css/seasons.css" />
     <link rel="stylesheet" href="/src/css/crops.css" />
     <link rel="stylesheet" href="/src/css/production-cycles.css" />
+    <link rel="stylesheet" href="/src/css/inputs.css" />
+    <link rel="stylesheet" href="/src/css/inventory-stock.css" />
+    <link rel="stylesheet" href="/src/css/event-inputs.css" />
+    <link rel="stylesheet" href="/src/css/consultants.css" />
+    <link rel="stylesheet" href="/src/css/whatsapp.css" />
+    <link rel="stylesheet" href="/src/css/harvest-forecast.css" />
+    <link rel="stylesheet" href="/src/css/notifications.css" />
+    <link rel="stylesheet" href="/src/css/harvests-sales.css" />
+    <link rel="stylesheet" href="/src/css/finance.css" />
+    <link rel="stylesheet" href="/src/css/evolution.css" />
+    <link rel="stylesheet" href="/src/css/events.css" />
+    <link rel="stylesheet" href="/src/css/theme.css" />
   </head>
 
   <body>

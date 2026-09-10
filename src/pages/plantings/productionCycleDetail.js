@@ -33,6 +33,7 @@ import {
 
 import {
   escapeHtml,
+  formatCurrencyBRL,
   formatDatePtBr,
 } from '../../js/html.js';
 
@@ -51,6 +52,30 @@ import {
 import {
   navigate,
 } from '../../js/router.js';
+
+import {
+  listProductionEvents,
+} from '../../services/productionEventService.js';
+
+import {
+  productionEventCard,
+} from './productionEventView.js';
+
+import {
+  showPhotoViewer,
+} from '../../components/photoViewerModal.js';
+
+import {
+  listHarvests,
+} from '../../services/harvestService.js';
+
+import {
+  harvestCard,
+} from '../harvests/harvestView.js';
+
+import {
+  getCycleFinancialSummary,
+} from '../../services/financeService.js';
 
 export async function renderProductionCycleDetailPage({
   session,
@@ -105,6 +130,43 @@ export async function renderProductionCycleDetailPage({
 
   const quantity =
     plantedQuantityLabel(cycle);
+
+  let events = [];
+  let harvests = [];
+  let financialSummary = null;
+
+  try {
+    [
+      events,
+      harvests,
+    ] =
+      await Promise.all([
+        listProductionEvents(
+          cycle.id,
+        ),
+        listHarvests({
+          cycleId:
+            cycle.id,
+        }),
+      ]);
+  } catch (error) {
+    console.error(
+      'Erro ao carregar linha do tempo:',
+      error,
+    );
+  }
+
+  try {
+    financialSummary =
+      await getCycleFinancialSummary(
+        cycle.id,
+      );
+  } catch (error) {
+    console.warn(
+      'Resumo financeiro ainda não disponível:',
+      error,
+    );
+  }
 
   app.innerHTML =
     appShell({
@@ -417,28 +479,259 @@ export async function renderProductionCycleDetailPage({
           </p>
         </article>
 
-        ${
-          !archived
-            ? `
-              <section
-                class="empty-state"
-                style="margin-top: 16px;"
-              >
-                <div class="empty-state__icon">
-                  ${icon('clipboard')}
+        <section class="cycle-harvest-section">
+          <div class="cycle-harvest-section__header">
+            <div>
+              <p class="section-eyebrow">
+                Colheitas
+              </p>
+
+              <h2>
+                Produção colhida
+              </h2>
+
+              <p>
+                ${harvests.length} ${
+                  harvests.length === 1
+                    ? 'colheita registrada'
+                    : 'colheitas registradas'
+                } neste ciclo.
+              </p>
+            </div>
+
+            ${
+              archived ||
+              [
+                'harvested',
+                'closed',
+                'cancelled',
+              ].includes(
+                cycle.status,
+              )
+                ? ''
+                : `
+                  <a
+                    href="/plantings/${cycle.id}/harvests/new"
+                    class="button button--primary button--compact"
+                    data-link
+                  >
+                    ${icon('plus')}
+                    Registrar colheita
+                  </a>
+                `
+            }
+          </div>
+
+          ${
+            harvests.length
+              ? `
+                <div class="cycle-harvest-list">
+                  ${harvests
+                    .slice(0, 3)
+                    .map(
+                      harvestCard,
+                    )
+                    .join('')}
                 </div>
 
-                <h2>
-                  Linha do tempo
-                </h2>
+                ${
+                  harvests.length > 3
+                    ? `
+                      <a
+                        href="/more/harvests?cycle=${cycle.id}"
+                        class="button button--ghost button--full"
+                        data-link
+                      >
+                        Ver todas as colheitas
+                      </a>
+                    `
+                    : ''
+                }
+              `
+              : `
+                <div class="dashboard-empty-inline dashboard-empty-inline--wide">
+                  <span class="dashboard-empty-inline__icon">
+                    ${icon('harvest')}
+                  </span>
 
-                <p>
-                  Na Etapa 11 os eventos de plantio, irrigação, adubação, pragas, fotografias e demais operações aparecerão aqui.
-                </p>
+                  <div>
+                    <strong>
+                      Nenhuma colheita registrada
+                    </strong>
+
+                    <span>
+                      Registre cada retirada separadamente para preservar colheitas parciais e sucessivas.
+                    </span>
+                  </div>
+                </div>
+              `
+          }
+        </section>
+
+        ${
+          financialSummary
+            ? `
+              <section class="cycle-finance-summary">
+                <div class="cycle-finance-summary__header">
+                  <div>
+                    <p class="section-eyebrow">
+                      Financeiro
+                    </p>
+
+                    <h2>
+                      Resultado básico do ciclo
+                    </h2>
+
+                    <p>
+                      Considera receitas de vendas e custos dos insumos consumidos.
+                    </p>
+                  </div>
+
+                  <a
+                    href="/more/finance/${cycle.id}"
+                    class="button button--secondary button--compact"
+                    data-link
+                  >
+                    ${icon('chart')}
+                    Ver detalhes
+                  </a>
+                </div>
+
+                <div class="cycle-finance-summary__metrics">
+                  <div>
+                    <span>
+                      Custos
+                    </span>
+
+                    <strong class="finance-value--cost">
+                      ${formatCurrencyBRL(
+                        financialSummary.input_cost,
+                      )}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      Receita
+                    </span>
+
+                    <strong class="finance-value--revenue">
+                      ${formatCurrencyBRL(
+                        financialSummary.sales_revenue,
+                      )}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      Resultado
+                    </span>
+
+                    <strong
+                      class="${
+                        financialSummary.estimated_result > 0
+                          ? 'finance-value--positive'
+                          : financialSummary.estimated_result < 0
+                            ? 'finance-value--negative'
+                            : ''
+                      }"
+                    >
+                      ${formatCurrencyBRL(
+                        financialSummary.estimated_result,
+                      )}
+                    </strong>
+                  </div>
+                </div>
               </section>
             `
             : ''
         }
+
+        <section
+          id="timeline"
+          class="timeline-section"
+        >
+          <div class="timeline-section__header">
+            <div>
+              <h2>
+                Linha do tempo
+              </h2>
+
+              <p>
+                ${events.length} ${
+                  events.length === 1
+                    ? 'evento registrado'
+                    : 'eventos registrados'
+                } neste ciclo.
+              </p>
+            </div>
+
+            <div class="timeline-section__actions">
+              <a
+                href="/plantings/${cycle.id}/evolution"
+                class="button button--secondary button--compact"
+                data-link
+              >
+                ${icon('camera')}
+                Evolução
+              </a>
+
+              ${
+                archived
+                  ? ''
+                  : `
+                    <a
+                      href="/plantings/${cycle.id}/events/new"
+                      class="button button--primary button--compact"
+                      data-link
+                    >
+                      ${icon('plus')}
+                      Novo evento
+                    </a>
+                  `
+              }
+            </div>
+          </div>
+
+          ${
+            events.length
+              ? `
+                <div class="timeline-list">
+                  ${events
+                    .map(
+                      (event) =>
+                        productionEventCard(
+                          event,
+                          {
+                            cycleId:
+                              cycle.id,
+                            readonly:
+                              archived,
+                          },
+                        ),
+                    )
+                    .join('')}
+                </div>
+              `
+              : `
+                <div class="dashboard-empty-inline dashboard-empty-inline--wide">
+                  <span class="dashboard-empty-inline__icon">
+                    ${icon('clipboard')}
+                  </span>
+
+                  <div>
+                    <strong>
+                      Nenhum evento registrado
+                    </strong>
+
+                    <span>
+                      Execute o SQL das Etapas 11–13 para criar automaticamente o evento inicial de plantio e registre novas atividades aqui.
+                    </span>
+                  </div>
+                </div>
+              `
+          }
+        </section>
       `,
     });
 
@@ -569,6 +862,36 @@ export async function renderProductionCycleDetailPage({
     handleRestore,
   );
 
+  const timeline =
+    document.querySelector(
+      '#timeline',
+    );
+
+  const handleTimelineClick =
+    (event) => {
+      const viewer =
+        event.target.closest(
+          '[data-photo-view]',
+        );
+
+      if (!viewer) {
+        return;
+      }
+
+      showPhotoViewer({
+        src:
+          viewer.dataset.photoView,
+        alt:
+          viewer.dataset.photoAlt ||
+          'Foto do evento',
+      });
+    };
+
+  timeline?.addEventListener(
+    'click',
+    handleTimelineClick,
+  );
+
   return () => {
     archiveButton?.removeEventListener(
       'click',
@@ -578,6 +901,11 @@ export async function renderProductionCycleDetailPage({
     restoreButton?.removeEventListener(
       'click',
       handleRestore,
+    );
+
+    timeline?.removeEventListener(
+      'click',
+      handleTimelineClick,
     );
   };
 }

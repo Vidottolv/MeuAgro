@@ -37,6 +37,14 @@ export function getDataErrorMessage(
       return 'Você já possui uma cultura personalizada com este nome.';
     }
 
+    if (
+      normalized.includes(
+        'uq_inputs_user_name_brand_active',
+      )
+    ) {
+      return 'Já existe um insumo ativo com este nome e marca.';
+    }
+
     return 'Já existe um registro com estes dados.';
   }
 
@@ -63,6 +71,49 @@ export function getDataErrorMessage(
     ) ||
     normalized.includes(
       'propriedade inválida',
+    )
+  ) {
+    return message;
+  }
+
+  if (
+    normalized.includes(
+      'quantidade total vendida',
+    ) ||
+    normalized.includes(
+      'quantidade já vendida',
+    ) ||
+    normalized.includes(
+      'destino desta colheita',
+    ) ||
+    normalized.includes(
+      'data da venda',
+    ) ||
+    normalized.includes(
+      'data da colheita',
+    ) ||
+    normalized.includes(
+      'ciclo produtivo já está encerrado',
+    )
+  ) {
+    return message;
+  }
+
+  if (
+    normalized.includes(
+      'saldo insuficiente',
+    ) ||
+    normalized.includes(
+      'lote inválido',
+    ) ||
+    normalized.includes(
+      'unidade do lote',
+    ) ||
+    normalized.includes(
+      'lote deve usar a unidade principal',
+    ) ||
+    normalized.includes(
+      'insumo inativo',
     )
   ) {
     return message;

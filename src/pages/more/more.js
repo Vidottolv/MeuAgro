@@ -54,9 +54,16 @@ export function renderMorePage({
           })}
 
           ${moreItem({
+            iconName: 'harvest',
+            title: 'Previsão de colheita',
+            description: 'Atrasos, semana da colheita e lembretes',
+            href: '/more/harvest-forecast',
+          })}
+
+          ${moreItem({
             iconName: 'users',
             title: 'Consultores',
-            description: 'Contatos agrícolas e WhatsApp',
+            description: 'Contatos, especialidades e WhatsApp',
             href: '/more/consultants',
           })}
 
@@ -83,7 +90,7 @@ export function renderMorePage({
           ${moreItem({
             iconName: 'chart',
             title: 'Financeiro',
-            description: 'Custos e resultados',
+            description: 'Insumos, receitas e resultado por ciclo',
             href: '/more/finance',
           })}
         </section>
@@ -96,7 +103,7 @@ export function renderMorePage({
           ${moreItem({
             iconName: 'settings',
             title: 'Configurações',
-            description: 'Preferências do aplicativo',
+            description: 'Lembretes de colheita e notificações',
             href: '/more/settings',
           })}
 

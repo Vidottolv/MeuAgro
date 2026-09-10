@@ -1,0 +1,765 @@
+/* ============================================================
+   MEU AGRO — APARÊNCIA
+   O tema claro continua sendo o padrão.
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+  --theme-control-background: #ffffff;
+  --theme-overlay-background: rgba(16, 32, 23, 0.42);
+  --theme-topbar-start: rgba(245, 244, 236, 0.98);
+  --theme-topbar-end: rgba(245, 244, 236, 0.92);
+  --theme-nav-background: rgba(255, 255, 255, 0.96);
+  --theme-nav-border: rgba(207, 216, 208, 0.92);
+  --theme-empty-background: rgba(255, 255, 255, 0.58);
+}
+
+/* ------------------------------------------------------------
+   Seletor de tema
+   ------------------------------------------------------------ */
+
+.appearance-card {
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.appearance-card__header {
+  margin-bottom: 14px;
+}
+
+.appearance-card__header h2 {
+  font-size: 1.05rem;
+}
+
+.appearance-card__header p {
+  margin-top: 4px;
+  color: var(--color-text-soft);
+  font-size: 0.8rem;
+}
+
+.appearance-options {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.appearance-option {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+
+.appearance-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.appearance-option__content {
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--color-surface-soft);
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.appearance-option:active
+.appearance-option__content {
+  transform: scale(0.985);
+}
+
+.appearance-option input:checked
++ .appearance-option__content {
+  border-color: var(--color-primary-700);
+  background: var(--color-primary-050);
+  box-shadow:
+    inset 0 0 0 1px
+    var(--color-primary-700);
+}
+
+.appearance-option input:focus-visible
++ .appearance-option__content {
+  outline:
+    3px solid
+    color-mix(
+      in srgb,
+      var(--color-primary-700) 28%,
+      transparent
+    );
+  outline-offset: 2px;
+}
+
+.appearance-option__preview {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.appearance-option__preview--light {
+  color: #5d7549;
+  background: #f7f6ee;
+}
+
+.appearance-option__preview--dark {
+  color: #acd2b8;
+  background: #17211b;
+  border-color: #33443a;
+}
+
+.appearance-option__text {
+  min-width: 0;
+}
+
+.appearance-option__text strong,
+.appearance-option__text span {
+  display: block;
+}
+
+.appearance-option__text strong {
+  font-size: 0.84rem;
+}
+
+.appearance-option__text span {
+  margin-top: 3px;
+  color: var(--color-text-soft);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+/* ------------------------------------------------------------
+   Correção do alinhamento dos ícones em "Mais"
+   ------------------------------------------------------------ */
+
+.more-item {
+  display: grid;
+  grid-template-columns:
+    40px
+    minmax(0, 1fr)
+    24px;
+  align-items: center;
+  column-gap: 13px;
+}
+
+.more-item__icon {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 0;
+}
+
+.more-item__icon .icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  margin: 0;
+}
+
+.more-item__arrow {
+  display: flex;
+  width: 24px;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.more-item__arrow .icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+/* ============================================================
+   DARK
+   ============================================================ */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-primary-950: #0b2016;
+  --color-primary-900: #123121;
+  --color-primary-800: #3f8b60;
+  --color-primary-700: #59a777;
+  --color-primary-600: #72ba8c;
+  --color-primary-100: #21382b;
+  --color-primary-050: #18281f;
+
+  --color-accent-600: #9ab969;
+  --color-accent-500: #abc77a;
+  --color-accent-100: #2a3822;
+
+  --color-surface: #18201b;
+  --color-surface-soft: #202923;
+  --color-background: #0f1511;
+  --color-border: #2d3931;
+  --color-border-strong: #3b4a40;
+
+  --color-text: #edf4ef;
+  --color-text-soft: #b4c0b8;
+  --color-text-faint: #839087;
+
+  --color-success: #59ae79;
+  --color-warning: #d2a44c;
+  --color-danger: #df7373;
+
+  --shadow-card:
+    0 14px 34px rgba(0, 0, 0, 0.26);
+
+  --shadow-nav:
+    0 -12px 32px rgba(0, 0, 0, 0.3);
+
+  --theme-control-background: #141c17;
+  --theme-overlay-background: rgba(0, 0, 0, 0.68);
+  --theme-topbar-start: rgba(15, 21, 17, 0.98);
+  --theme-topbar-end: rgba(15, 21, 17, 0.91);
+  --theme-nav-background: rgba(24, 32, 27, 0.97);
+  --theme-nav-border: rgba(59, 74, 64, 0.95);
+  --theme-empty-background: rgba(24, 32, 27, 0.72);
+}
+
+/* Fundo geral */
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(93, 154, 104, 0.11),
+      transparent 34%
+    ),
+    var(--color-background);
+}
+
+/* Topbar e navegação */
+:root[data-theme="dark"]
+.app-topbar-wrap {
+  background:
+    linear-gradient(
+      to bottom,
+      var(--theme-topbar-start),
+      var(--theme-topbar-end)
+    );
+}
+
+:root[data-theme="dark"]
+.bottom-nav {
+  border-color:
+    var(--theme-nav-border);
+  background:
+    var(--theme-nav-background);
+}
+
+:root[data-theme="dark"]
+.bottom-nav__item--active {
+  color: #9bd3ac;
+  background: #263a2e;
+}
+
+/* Campos nativos */
+:root[data-theme="dark"]
+input:not(
+  [type="checkbox"]
+):not(
+  [type="radio"]
+),
+:root[data-theme="dark"]
+select,
+:root[data-theme="dark"]
+textarea {
+  border-color: var(--color-border);
+  color: var(--color-text);
+  background:
+    var(--theme-control-background);
+}
+
+:root[data-theme="dark"]
+input::placeholder,
+:root[data-theme="dark"]
+textarea::placeholder {
+  color: #77867c;
+}
+
+:root[data-theme="dark"]
+input:focus,
+:root[data-theme="dark"]
+select:focus,
+:root[data-theme="dark"]
+textarea:focus {
+  border-color:
+    var(--color-primary-700);
+  box-shadow:
+    0 0 0 3px
+    rgba(89, 167, 119, 0.17);
+}
+
+/* Superfícies que no tema claro usam branco fixo */
+:root[data-theme="dark"]
+.empty-state {
+  background:
+    var(--theme-empty-background);
+}
+
+:root[data-theme="dark"]
+.modal-backdrop {
+  background:
+    var(--theme-overlay-background);
+}
+
+:root[data-theme="dark"]
+.property-toolbar,
+:root[data-theme="dark"]
+.crop-search,
+:root[data-theme="dark"]
+.property-card__image--empty {
+  background:
+    var(--color-surface-soft);
+}
+
+/* Botões e links */
+:root[data-theme="dark"]
+.button--primary {
+  color: #ffffff;
+  background: #34784f;
+}
+
+:root[data-theme="dark"]
+.button--primary:hover:not(:disabled) {
+  background: #408c5f;
+}
+
+:root[data-theme="dark"]
+.button--secondary {
+  color: #a8d8b5;
+  background: #23382b;
+}
+
+:root[data-theme="dark"]
+.button--ghost {
+  color: #90cba3;
+}
+
+:root[data-theme="dark"]
+.icon-button {
+  color: #95cfa7;
+}
+
+:root[data-theme="dark"]
+.dashboard-hero__button {
+  color: #102f20;
+  background: #e6f1e9;
+}
+
+/* Cartões com sombra clara fixa */
+:root[data-theme="dark"]
+.season-card,
+:root[data-theme="dark"]
+.crop-card,
+:root[data-theme="dark"]
+.area-card,
+:root[data-theme="dark"]
+.cycle-card,
+:root[data-theme="dark"]
+.input-card,
+:root[data-theme="dark"]
+.inventory-lot-card,
+:root[data-theme="dark"]
+.consultant-card,
+:root[data-theme="dark"]
+.harvest-forecast-card,
+:root[data-theme="dark"]
+.harvest-card,
+:root[data-theme="dark"]
+.sale-card,
+:root[data-theme="dark"]
+.finance-cycle-card,
+:root[data-theme="dark"]
+.dashboard-metric,
+:root[data-theme="dark"]
+.dashboard-panel {
+  box-shadow:
+    0 9px 24px rgba(0, 0, 0, 0.18);
+}
+
+/* Chips de sucesso */
+:root[data-theme="dark"]
+.season-status--active,
+:root[data-theme="dark"]
+.input-status--active,
+:root[data-theme="dark"]
+.consultant-status--active,
+:root[data-theme="dark"]
+.financial-result--positive,
+:root[data-theme="dark"]
+.cycle-status--developing,
+:root[data-theme="dark"]
+.cycle-status--harvested,
+:root[data-theme="dark"]
+.harvest-card__sales,
+:root[data-theme="dark"]
+.harvest-sale-hint,
+:root[data-theme="dark"]
+.sale-total-preview {
+  color: #9ed5ad;
+  background: #1d3a29;
+}
+
+/* Chips informativos */
+:root[data-theme="dark"]
+.cycle-status--planted,
+:root[data-theme="dark"]
+.harvest-forecast-status--upcoming {
+  color: #9fc3e9;
+  background: #1d3043;
+}
+
+/* Chips de atenção */
+:root[data-theme="dark"]
+.season-status--planned,
+:root[data-theme="dark"]
+.cycle-status--planned,
+:root[data-theme="dark"]
+.cycle-status--near-harvest,
+:root[data-theme="dark"]
+.cycle-status--ready,
+:root[data-theme="dark"]
+.harvest-forecast-status--today,
+:root[data-theme="dark"]
+.harvest-forecast-status--harvest_week,
+:root[data-theme="dark"]
+.consultant-status--inactive,
+:root[data-theme="dark"]
+.financial-result--break_even {
+  color: #e2bf78;
+  background: #40351e;
+}
+
+/* Chips de erro/cancelamento */
+:root[data-theme="dark"]
+.season-status--cancelled,
+:root[data-theme="dark"]
+.cycle-status--cancelled,
+:root[data-theme="dark"]
+.harvest-forecast-status--overdue,
+:root[data-theme="dark"]
+.financial-result--negative {
+  color: #efa0a0;
+  background: #442424;
+}
+
+/* Chips neutros */
+:root[data-theme="dark"]
+.season-status--closed,
+:root[data-theme="dark"]
+.cycle-status--closed,
+:root[data-theme="dark"]
+.consultant-status--archived,
+:root[data-theme="dark"]
+.harvest-forecast-status--no_forecast,
+:root[data-theme="dark"]
+.financial-result--no_activity {
+  color: #b4c0b8;
+  background: #2a332d;
+}
+
+/* Estoque */
+:root[data-theme="dark"]
+.input-stock-status--normal,
+:root[data-theme="dark"]
+.stock-status--normal,
+:root[data-theme="dark"]
+.stock-transaction--positive {
+  color: #9ed5ad !important;
+}
+
+:root[data-theme="dark"]
+.input-stock-status--low_stock,
+:root[data-theme="dark"]
+.stock-status--low_stock {
+  color: #e2bf78 !important;
+}
+
+:root[data-theme="dark"]
+.input-stock-status--out_of_stock,
+:root[data-theme="dark"]
+.stock-status--out_of_stock,
+:root[data-theme="dark"]
+.stock-transaction--negative {
+  color: #efa0a0 !important;
+}
+
+/* Blocos de aviso */
+:root[data-theme="dark"]
+.stock-restock-alert,
+:root[data-theme="dark"]
+.harvest-finalize-card {
+  border-color: #59442a;
+  background: #2d251a;
+}
+
+:root[data-theme="dark"]
+.notification-browser-note,
+:root[data-theme="dark"]
+.finance-scope-note {
+  border-color: var(--color-border);
+  background: var(--color-surface-soft);
+}
+
+/* Ícones com fundos claros fixos */
+:root[data-theme="dark"]
+.crop-card__icon,
+:root[data-theme="dark"]
+.input-card__icon,
+:root[data-theme="dark"]
+.inventory-lot-card__icon,
+:root[data-theme="dark"]
+.consultant-card__icon,
+:root[data-theme="dark"]
+.harvest-forecast-card__icon,
+:root[data-theme="dark"]
+.harvest-card__icon,
+:root[data-theme="dark"]
+.sale-card__icon,
+:root[data-theme="dark"]
+.finance-cycle-card__icon,
+:root[data-theme="dark"]
+.finance-cost-row__icon,
+:root[data-theme="dark"]
+.notification-preview__icon,
+:root[data-theme="dark"]
+.restock-modal__icon {
+  color: #9bcbaa;
+  background: #25382c;
+}
+
+/* Form messages */
+:root[data-theme="dark"]
+.form-message--error {
+  border-color: #633434;
+  color: #f1aaaa;
+  background: #3a2323;
+}
+
+:root[data-theme="dark"]
+.form-message--success {
+  border-color: #315a40;
+  color: #a4d7b2;
+  background: #1e3527;
+}
+
+:root[data-theme="dark"]
+.form-message--info {
+  border-color: #5d4c27;
+  color: #e4c47d;
+  background: #332c1e;
+}
+
+/* Financeiro */
+:root[data-theme="dark"]
+.finance-overview-card--result {
+  background:
+    linear-gradient(
+      140deg,
+      var(--color-surface),
+      #1b2820
+    );
+}
+
+:root[data-theme="dark"]
+.finance-value--cost,
+:root[data-theme="dark"]
+.finance-cost-row__value {
+  color: #e5a06f !important;
+}
+
+:root[data-theme="dark"]
+.finance-value--revenue,
+:root[data-theme="dark"]
+.finance-value--positive {
+  color: #96d5a9 !important;
+}
+
+/* Switch */
+:root[data-theme="dark"]
+.switch-control__track {
+  background: #3d4941;
+}
+
+:root[data-theme="dark"]
+.switch-control__track::after {
+  background: #e7eee9;
+}
+
+/* Seleção do tema */
+:root[data-theme="dark"]
+.appearance-option__preview--light {
+  border-color: #4a544d;
+  color: #7b887f;
+  background: #303631;
+}
+
+:root[data-theme="dark"]
+.appearance-option__preview--dark {
+  border-color: #4d6656;
+  color: #b5dcc0;
+  background: #101712;
+}
+
+/* Autofill de Chromium/WebView */
+:root[data-theme="dark"]
+input:-webkit-autofill,
+:root[data-theme="dark"]
+input:-webkit-autofill:hover,
+:root[data-theme="dark"]
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color:
+    var(--color-text);
+  -webkit-box-shadow:
+    0 0 0 1000px
+    var(--theme-control-background)
+    inset;
+  caret-color:
+    var(--color-text);
+}
+
+@media (max-width: 520px) {
+  .appearance-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ------------------------------------------------------------
+   Ajustes dark adicionais para componentes semânticos antigos
+   que ainda tinham cores claras fixas.
+   ------------------------------------------------------------ */
+
+:root[data-theme="dark"]
+.segmented-control {
+  border-color: var(--color-border);
+  background: #151d18;
+}
+
+:root[data-theme="dark"]
+.segmented-control__button--active {
+  color: #a4d7b2;
+  background: #263a2e;
+}
+
+:root[data-theme="dark"]
+.dashboard-metric__icon--success {
+  color: #9ed5ad;
+  background: #1d3a29;
+}
+
+:root[data-theme="dark"]
+.dashboard-metric__icon--warning,
+:root[data-theme="dark"]
+.dashboard-panel__icon--harvest,
+:root[data-theme="dark"]
+.dashboard-attention-row__icon--harvest,
+:root[data-theme="dark"]
+.dashboard-attention-row__icon--warning {
+  color: #e2bf78;
+  background: #40351e;
+}
+
+:root[data-theme="dark"]
+.dashboard-panel__icon--stock {
+  color: #d9a47c;
+  background: #3b2d24;
+}
+
+:root[data-theme="dark"]
+.dashboard-metric__icon--danger,
+:root[data-theme="dark"]
+.dashboard-attention-row__icon--danger {
+  color: #efa0a0;
+  background: #442424;
+}
+
+:root[data-theme="dark"]
+.input-stock--normal,
+:root[data-theme="dark"]
+.inventory-lot-status--available,
+:root[data-theme="dark"]
+.crop-active-badge--active {
+  color: #9ed5ad;
+  background: #1d3a29;
+}
+
+:root[data-theme="dark"]
+.input-stock--low,
+:root[data-theme="dark"]
+.crop-source-badge--system {
+  color: #e2bf78;
+  background: #40351e;
+}
+
+:root[data-theme="dark"]
+.input-stock--out,
+:root[data-theme="dark"]
+.inventory-lot-status--expired,
+:root[data-theme="dark"]
+.crop-active-badge--inactive {
+  color: #efa0a0;
+  background: #442424;
+}
+
+:root[data-theme="dark"]
+.inventory-lot-status--empty {
+  color: #b4c0b8;
+  background: #2a332d;
+}
+
+:root[data-theme="dark"]
+.crop-source-badge--custom {
+  color: #9fc3e9;
+  background: #1d3043;
+}
+
+:root[data-theme="dark"]
+.stock-transaction-card__icon.stock-transaction--positive,
+:root[data-theme="dark"]
+.stock-transaction-detail-hero__icon.stock-transaction--positive {
+  background: #1d3a29;
+}
+
+:root[data-theme="dark"]
+.stock-transaction-card__icon.stock-transaction--negative,
+:root[data-theme="dark"]
+.stock-transaction-detail-hero__icon.stock-transaction--negative {
+  background: #442424;
+}
+
+:root[data-theme="dark"]
+.stock-restock-alert__content .icon {
+  color: #e2bf78;
+}
+
+:root[data-theme="dark"]
+.restock-modal__icon {
+  color: #e2bf78;
+  background: #40351e;
+}

@@ -10,6 +10,10 @@ import {
   OPEN_PRODUCTION_CYCLE_STATUSES,
 } from '../constants/productionCycleStatus.js';
 
+import {
+  queueHarvestNotificationSync,
+} from './notificationService.js';
+
 const CYCLE_FIELDS = `
   id,
   user_id,
@@ -213,6 +217,9 @@ export async function createProductionCycle(
       .single();
 
   if (error) throw error;
+
+  queueHarvestNotificationSync();
+
   return data;
 }
 
@@ -240,6 +247,9 @@ export async function updateProductionCycle(
       .single();
 
   if (error) throw error;
+
+  queueHarvestNotificationSync();
+
   return data;
 }
 
@@ -266,6 +276,9 @@ export async function archiveProductionCycle(id) {
       .single();
 
   if (error) throw error;
+
+  queueHarvestNotificationSync();
+
   return data;
 }
 
@@ -291,6 +304,9 @@ export async function restoreProductionCycle(id) {
       .single();
 
   if (error) throw error;
+
+  queueHarvestNotificationSync();
+
   return data;
 }
 

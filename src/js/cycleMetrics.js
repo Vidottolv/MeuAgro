@@ -3,15 +3,79 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 function parseLocalDate(value) {
   if (!value) return null;
 
-  const [year, month, day] =
-    String(value).split('-').map(Number);
+  if (
+    value instanceof Date
+  ) {
+    if (
+      Number.isNaN(
+        value.getTime(),
+      )
+    ) {
+      return null;
+    }
 
-  if (!year || !month || !day) return null;
+    return new Date(
+      value.getFullYear(),
+      value.getMonth(),
+      value.getDate(),
+      12,
+      0,
+      0,
+      0,
+    );
+  }
+
+  const text =
+    String(value);
+
+  if (
+    /^\d{4}-\d{2}-\d{2}$/.test(
+      text,
+    )
+  ) {
+    const [
+      year,
+      month,
+      day,
+    ] =
+      text
+        .split('-')
+        .map(Number);
+
+    if (
+      !year ||
+      !month ||
+      !day
+    ) {
+      return null;
+    }
+
+    return new Date(
+      year,
+      month - 1,
+      day,
+      12,
+      0,
+      0,
+      0,
+    );
+  }
+
+  const parsed =
+    new Date(text);
+
+  if (
+    Number.isNaN(
+      parsed.getTime(),
+    )
+  ) {
+    return null;
+  }
 
   return new Date(
-    year,
-    month - 1,
-    day,
+    parsed.getFullYear(),
+    parsed.getMonth(),
+    parsed.getDate(),
     12,
     0,
     0,
