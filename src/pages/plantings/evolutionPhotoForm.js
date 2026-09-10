@@ -48,6 +48,12 @@ import {
 } from '../../services/dataErrorService.js';
 
 import {
+  choosePhotoFromGallery,
+  isNativeCameraPlatform,
+  takePhotoWithCamera,
+} from '../../services/cameraService.js';
+
+import {
   navigate,
 } from '../../js/router.js';
 
@@ -166,6 +172,10 @@ export async function renderEvolutionPhotoFormPage({
         selectedEvent,
     );
 
+
+  const nativeCamera =
+    isNativeCameraPlatform();
+
   app.innerHTML =
     appShell({
       session,
@@ -220,9 +230,53 @@ export async function renderEvolutionPhotoFormPage({
               </p>
             </div>
 
-            <label
+            <div class="photo-source-actions">
+              ${
+                nativeCamera
+                  ? `
+                    <button
+                      id="take-photo"
+                      class="photo-source-button photo-source-button--camera"
+                      type="button"
+                    >
+                      ${icon('camera')}
+
+                      <span>
+                        <strong>
+                          Tirar foto
+                        </strong>
+
+                        <small>
+                          Abrir a câmera do dispositivo
+                        </small>
+                      </span>
+                    </button>
+                  `
+                  : ''
+              }
+
+              <button
+                id="choose-photo"
+                class="photo-source-button"
+                type="button"
+              >
+                ${icon('image')}
+
+                <span>
+                  <strong>
+                    Escolher da galeria
+                  </strong>
+
+                  <small>
+                    Usar uma imagem já existente
+                  </small>
+                </span>
+              </button>
+            </div>
+
+            <div
               class="photo-upload-field"
-              for="photo-file"
+              id="photo-upload-field"
             >
               <span
                 id="photo-upload-placeholder"
@@ -231,11 +285,15 @@ export async function renderEvolutionPhotoFormPage({
                 ${icon('camera')}
 
                 <strong>
-                  Selecionar imagem
+                  Nenhuma imagem selecionada
                 </strong>
 
                 <small>
-                  Toque para escolher uma foto do dispositivo.
+                  ${
+                    nativeCamera
+                      ? 'Tire uma foto agora ou escolha uma imagem da galeria.'
+                      : 'Escolha uma imagem do dispositivo.'
+                  }
                 </small>
               </span>
 
@@ -245,15 +303,23 @@ export async function renderEvolutionPhotoFormPage({
                 alt="Prévia da imagem selecionada"
                 hidden
               />
+            </div>
 
-              <input
-                id="photo-file"
-                name="file"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                required
-              />
-            </label>
+            <p
+              id="photo-source-status"
+              class="photo-source-status"
+              hidden
+            ></p>
+
+            <input
+              id="photo-file"
+              name="file"
+              class="photo-file-input"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              tabindex="-1"
+              aria-hidden="true"
+            />
           </section>
 
           <section class="form-card">
@@ -359,6 +425,22 @@ export async function renderEvolutionPhotoFormPage({
       '#photo-file',
     );
 
+
+  const takePhotoButton =
+    document.querySelector(
+      '#take-photo',
+    );
+
+  const choosePhotoButton =
+    document.querySelector(
+      '#choose-photo',
+    );
+
+  const sourceStatus =
+    document.querySelector(
+      '#photo-source-status',
+    );
+
   const preview =
     document.querySelector(
       '#photo-preview',
@@ -385,6 +467,52 @@ export async function renderEvolutionPhotoFormPage({
     );
 
   let previewUrl = null;
+  let selectedFile = null;
+
+  const setSourceButtonLoading =
+    (
+      button,
+      loading,
+      label,
+    ) => {
+      if (!button) {
+        return;
+      }
+
+      if (loading) {
+        button.dataset.originalHtml =
+          button.innerHTML;
+
+        button.innerHTML = `
+          ${icon('refresh')}
+          <span>
+            <strong>${label}</strong>
+          </span>
+        `;
+
+        button.disabled = true;
+        button.setAttribute(
+          'aria-busy',
+          'true',
+        );
+
+        return;
+      }
+
+      if (
+        button.dataset
+          .originalHtml
+      ) {
+        button.innerHTML =
+          button.dataset
+            .originalHtml;
+      }
+
+      button.disabled = false;
+      button.removeAttribute(
+        'aria-busy',
+      );
+    };
 
   const clearPreview =
     () => {
@@ -397,12 +525,16 @@ export async function renderEvolutionPhotoFormPage({
       }
     };
 
-  const handleFileChange =
-    () => {
+  const setSelectedFile =
+    (
+      file,
+      {
+        sourceLabel =
+          'Imagem selecionada',
+        capturedAt = null,
+      } = {},
+    ) => {
       clearPreview();
-
-      const file =
-        fileInput.files?.[0];
 
       const validation =
         validatePhotoFile(
@@ -410,6 +542,8 @@ export async function renderEvolutionPhotoFormPage({
         );
 
       if (validation) {
+        selectedFile = null;
+
         setFormMessage(
           feedback,
           validation,
@@ -419,8 +553,13 @@ export async function renderEvolutionPhotoFormPage({
         placeholder.hidden =
           false;
 
-        return;
+        sourceStatus.hidden =
+          true;
+
+        return false;
       }
+
+      selectedFile = file;
 
       setFormMessage(
         feedback,
@@ -438,6 +577,163 @@ export async function renderEvolutionPhotoFormPage({
       preview.hidden = false;
       placeholder.hidden =
         true;
+
+      sourceStatus.textContent =
+        `${sourceLabel} • ${file.name}`;
+
+      sourceStatus.hidden =
+        false;
+
+      if (
+        capturedAt &&
+        eventSelect.value ===
+          '__auto__'
+      ) {
+        const capturedDate =
+          new Date(
+            capturedAt,
+          );
+
+        if (
+          !Number.isNaN(
+            capturedDate.getTime(),
+          )
+        ) {
+          capturedInput.value =
+            toDateTimeLocalValue(
+              capturedDate,
+            );
+        }
+      }
+
+      return true;
+    };
+
+  const handleFileChange =
+    () => {
+      const file =
+        fileInput.files?.[0];
+
+      if (!file) {
+        return;
+      }
+
+      setSelectedFile(
+        file,
+        {
+          sourceLabel:
+            'Imagem da galeria',
+        },
+      );
+    };
+
+  const handleChoosePhoto =
+    async () => {
+      if (!nativeCamera) {
+        fileInput.click();
+        return;
+      }
+
+      setSourceButtonLoading(
+        choosePhotoButton,
+        true,
+        'Abrindo galeria…',
+      );
+
+      try {
+        const selected =
+          await choosePhotoFromGallery();
+
+        if (!selected) {
+          return;
+        }
+
+        setSelectedFile(
+          selected.file,
+          {
+            sourceLabel:
+              'Imagem da galeria',
+            capturedAt:
+              selected.capturedAt,
+          },
+        );
+      } catch (error) {
+        console.warn(
+          'Seleção de imagem cancelada ou não concluída:',
+          error,
+        );
+
+        if (
+          !String(
+            error?.message || '',
+          )
+            .toLocaleLowerCase('pt-BR')
+            .includes('cancel')
+        ) {
+          setFormMessage(
+            feedback,
+            getDataErrorMessage(
+              error,
+            ),
+          );
+        }
+      } finally {
+        setSourceButtonLoading(
+          choosePhotoButton,
+          false,
+        );
+      }
+    };
+
+  const handleTakePhoto =
+    async () => {
+      setSourceButtonLoading(
+        takePhotoButton,
+        true,
+        'Abrindo câmera…',
+      );
+
+      try {
+        const captured =
+          await takePhotoWithCamera();
+
+        setSelectedFile(
+          captured.file,
+          {
+            sourceLabel:
+              'Foto tirada agora',
+            capturedAt:
+              captured.capturedAt ||
+              new Date()
+                .toISOString(),
+          },
+        );
+      } catch (error) {
+        console.warn(
+          'Captura de foto cancelada ou não concluída:',
+          error,
+        );
+
+        if (
+          !String(
+            error?.message || '',
+          )
+            .toLocaleLowerCase('pt-BR')
+            .includes('cancel')
+        ) {
+          setFormMessage(
+            feedback,
+            getDataErrorMessage(
+              error,
+            ),
+          );
+        }
+      } finally {
+        setSourceButtonLoading(
+          takePhotoButton,
+          false,
+        );
+      }
     };
 
   const handleEventChange =
@@ -467,7 +763,7 @@ export async function renderEvolutionPhotoFormPage({
       );
 
       const file =
-        fileInput.files?.[0];
+        selectedFile;
 
       const fileError =
         validatePhotoFile(
@@ -635,6 +931,16 @@ export async function renderEvolutionPhotoFormPage({
     handleFileChange,
   );
 
+  choosePhotoButton.addEventListener(
+    'click',
+    handleChoosePhoto,
+  );
+
+  takePhotoButton?.addEventListener(
+    'click',
+    handleTakePhoto,
+  );
+
   eventSelect.addEventListener(
     'change',
     handleEventChange,
@@ -651,6 +957,16 @@ export async function renderEvolutionPhotoFormPage({
     fileInput.removeEventListener(
       'change',
       handleFileChange,
+    );
+
+    choosePhotoButton.removeEventListener(
+      'click',
+      handleChoosePhoto,
+    );
+
+    takePhotoButton?.removeEventListener(
+      'click',
+      handleTakePhoto,
     );
 
     eventSelect.removeEventListener(

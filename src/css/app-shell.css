@@ -517,3 +517,9 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.mobile-app,
+.app-content {
+  min-width: 0;
+  max-width: 100%;
+}

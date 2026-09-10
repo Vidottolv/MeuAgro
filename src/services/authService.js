@@ -1,5 +1,27 @@
 import { supabase } from '../js/supabase.js';
 
+import {
+  Capacitor,
+} from '@capacitor/core';
+
+import {
+  nativeAuthUrl,
+} from '../constants/nativeApp.js';
+
+function authRedirectUrl(
+  route,
+) {
+  if (
+    Capacitor.isNativePlatform()
+  ) {
+    return nativeAuthUrl(
+      route,
+    );
+  }
+
+  return `${window.location.origin}${route}`;
+}
+
 function requireSupabase() {
   if (!supabase) {
     throw new Error(
@@ -23,7 +45,7 @@ export async function signUp({
       password,
       options: {
         emailRedirectTo:
-          `${window.location.origin}/login?confirmed=1`,
+          authRedirectUrl('/login?confirmed=1'),
         data: {
           full_name: fullName.trim(),
         },
@@ -69,7 +91,7 @@ export async function requestPasswordReset(
       email.trim().toLowerCase(),
       {
         redirectTo:
-          `${window.location.origin}/reset-password`,
+          authRedirectUrl('/reset-password'),
       },
     );
 

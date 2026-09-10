@@ -138,6 +138,18 @@ export function renderLoginPage() {
     );
   }
 
+  const nativeError =
+    params.get(
+      'nativeError',
+    );
+
+  if (nativeError) {
+    setFormMessage(
+      feedback,
+      nativeError,
+    );
+  }
+
   if (
     params.get('passwordUpdated') ===
     '1'

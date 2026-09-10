@@ -279,3 +279,90 @@
     width: 100%;
   }
 }
+
+/* ============================================================
+   Ajustes de responsividade para Android / telas estreitas
+   ============================================================ */
+
+.notification-runtime-card,
+.scheduled-notifications-card,
+.appearance-card,
+#notification-settings-form,
+#notification-settings-form .form-card {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.notification-runtime-card,
+.scheduled-notifications-card {
+  overflow: hidden;
+}
+
+.notification-runtime-card__header > div,
+.scheduled-notifications-card__header > div,
+.notification-runtime-grid > div {
+  min-width: 0;
+}
+
+.notification-runtime-grid strong {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.field-with-suffix {
+  display: grid;
+  min-width: 0;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+}
+
+.field-with-suffix input {
+  width: 100%;
+  min-width: 0;
+}
+
+.notification-preview {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns:
+    38px
+    minmax(0, 1fr)
+    20px;
+  align-items: center;
+}
+
+.notification-preview > .icon {
+  width: 18px;
+  height: 18px;
+  justify-self: end;
+}
+
+.notification-preview__content span {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.notification-preview__content strong,
+.notification-preview__content small {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  .notification-runtime-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .notification-runtime-card,
+  .scheduled-notifications-card {
+    padding: 14px;
+  }
+
+  .notification-runtime-card__header,
+  .scheduled-notifications-card__header {
+    align-items: flex-start;
+  }
+}

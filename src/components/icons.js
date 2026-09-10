@@ -150,6 +150,12 @@ const icons = {
     <path d="M14.5 5 16 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3l1.5-2Z" />
     <circle cx="12" cy="13" r="3.5" />
   `,
+  image: `
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <circle cx="8.5" cy="9" r="1.5" />
+    <path d="m21 15-5-5L5 20" />
+    <path d="m14 13 2 2" />
+  `,
   droplets: `
     <path d="M12 3s-5 5.3-5 9a5 5 0 0 0 10 0c0-3.7-5-9-5-9Z" />
     <path d="M5 16c-1.7 1.7-2 3-2 4a3 3 0 0 0 6 0c0-1-2-4-2-4" />

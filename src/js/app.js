@@ -18,6 +18,10 @@ import {
   initializeTheme,
 } from '../services/themeService.js';
 
+import {
+  initializeNativeRuntime,
+} from '../services/nativeRuntimeService.js';
+
 initializeTheme();
 
 onAuthStateChange((event) => {
@@ -80,6 +84,11 @@ onAuthStateChange((event) => {
 });
 
 initializeRouter();
+
+void initializeNativeRuntime({
+  navigate,
+  getCurrentPath,
+});
 
 void bootstrapNotificationRuntime({
   navigate,

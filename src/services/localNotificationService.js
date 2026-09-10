@@ -9,6 +9,13 @@ import {
 const HARVEST_CHANNEL_ID =
   'harvest-reminders';
 
+
+const NOTIFICATION_SMALL_ICON =
+  'ic_stat_meu_agro';
+
+const NOTIFICATION_ICON_COLOR =
+  '#39705F';
+
 function isAndroid() {
   return (
     Capacitor.getPlatform() ===
@@ -249,6 +256,10 @@ export async function syncNativeHarvestNotifications(
               ),
             allowWhileIdle: true,
           },
+          smallIcon:
+            NOTIFICATION_SMALL_ICON,
+          iconColor:
+            NOTIFICATION_ICON_COLOR,
           channelId:
             HARVEST_CHANNEL_ID,
           autoCancel: true,
@@ -354,6 +365,10 @@ export async function scheduleTestNotification() {
             ),
           allowWhileIdle: true,
         },
+        smallIcon:
+          NOTIFICATION_SMALL_ICON,
+        iconColor:
+          NOTIFICATION_ICON_COLOR,
         channelId:
           HARVEST_CHANNEL_ID,
         autoCancel: true,

@@ -69,3 +69,10 @@ button {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
 }
+
+/* Aplicativo mobile: nenhum conteúdo deve aumentar a largura do viewport. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}

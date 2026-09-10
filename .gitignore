@@ -6,3 +6,11 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Capacitor / Android
+android/.gradle/
+android/local.properties
+android/app/build/
+android/build/
+*.jks
+*.keystore
