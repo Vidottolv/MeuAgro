@@ -1,3 +1,4 @@
+import { consumeAuthCallback } from './authCallbackService.js';
 import {
   App,
 } from '@capacitor/app';
@@ -11,7 +12,6 @@ import {
 } from '../js/supabase.js';
 
 import {
-  NATIVE_APP,
   isNativeAuthUrl,
 } from '../constants/nativeApp.js';
 
@@ -26,183 +26,25 @@ export function getPlatformName() {
   return Capacitor.getPlatform();
 }
 
-function getRouteFromNativeUrl(
-  nativeUrl,
-) {
-  const url =
-    new URL(nativeUrl);
-
-  const pathname =
-    url.pathname || '/';
-
-  const search =
-    url.search || '';
-
-  if (
-    url.hostname ===
-    NATIVE_APP.authHost
-  ) {
-    return `${pathname}${search}`;
-  }
-
-  return '/dashboard';
-}
-
-async function applySupabaseSessionFromUrl(
-  nativeUrl,
-) {
-  if (!supabase) {
-    return;
-  }
-
-  const url =
-    new URL(nativeUrl);
-
-  const errorDescription =
-    url.searchParams.get(
-      'error_description',
-    ) ||
-    new URLSearchParams(
-      url.hash.replace(
-        /^#/,
-        '',
-      ),
-    ).get(
-      'error_description',
-    );
-
-  if (errorDescription) {
-    throw new Error(
-      decodeURIComponent(
-        errorDescription,
-      ),
-    );
-  }
-
-  const code =
-    url.searchParams.get(
-      'code',
-    );
-
-  if (code) {
-    const {
-      error,
-    } =
-      await supabase.auth
-        .exchangeCodeForSession(
-          code,
-        );
-
-    if (error) {
-      throw error;
+let callbackQueue = Promise.resolve();
+let lastHandledUrl = null;
+// Serialize cold/warm delivery; duplicate successful callbacks must not reuse a code.
+export function handleNativeAppUrl(nativeUrl, { navigate } = {}) {
+  if (!isNativeAuthUrl(nativeUrl)) return Promise.resolve(false);
+  const task = callbackQueue.then(async () => {
+    if (nativeUrl === lastHandledUrl) return true;
+    try {
+      const route = await consumeAuthCallback(nativeUrl, supabase, { native: true });
+      lastHandledUrl = nativeUrl;
+      navigate?.(route, { replace: true });
+      return true;
+    } catch {
+      navigate?.('/login?nativeError=' + encodeURIComponent('Não foi possível validar o link. Solicite um novo e-mail e tente novamente.'), { replace: true });
+      return false;
     }
-
-    return;
-  }
-
-  const hashParams =
-    new URLSearchParams(
-      url.hash.replace(
-        /^#/,
-        '',
-      ),
-    );
-
-  const accessToken =
-    hashParams.get(
-      'access_token',
-    );
-
-  const refreshToken =
-    hashParams.get(
-      'refresh_token',
-    );
-
-  if (
-    accessToken &&
-    refreshToken
-  ) {
-    const {
-      error,
-    } =
-      await supabase.auth
-        .setSession({
-          access_token:
-            accessToken,
-          refresh_token:
-            refreshToken,
-        });
-
-    if (error) {
-      throw error;
-    }
-  }
-}
-
-export async function handleNativeAppUrl(
-  nativeUrl,
-  {
-    navigate,
-  } = {},
-) {
-  if (
-    !nativeUrl ||
-    !isNativeAuthUrl(
-      nativeUrl,
-    )
-  ) {
-    return false;
-  }
-
-  try {
-    await applySupabaseSessionFromUrl(
-      nativeUrl,
-    );
-
-    const route =
-      getRouteFromNativeUrl(
-        nativeUrl,
-      );
-
-    if (
-      typeof navigate ===
-      'function'
-    ) {
-      navigate(
-        route,
-        {
-          replace: true,
-        },
-      );
-    }
-
-    return true;
-  } catch (error) {
-    console.error(
-      'Falha ao processar link de autenticação do aplicativo:',
-      error,
-    );
-
-    if (
-      typeof navigate ===
-      'function'
-    ) {
-      const message =
-        encodeURIComponent(
-          error.message ||
-          'Não foi possível concluir a autenticação.',
-        );
-
-      navigate(
-        `/login?nativeError=${message}`,
-        {
-          replace: true,
-        },
-      );
-    }
-
-    return false;
-  }
+  });
+  callbackQueue = task.catch(() => false);
+  return task;
 }
 
 export async function initializeNativeRuntime({
@@ -218,31 +60,12 @@ export async function initializeNativeRuntime({
 
   initialized = true;
 
-  const launch =
-    await App.getLaunchUrl();
-
-  if (launch?.url) {
-    await handleNativeAppUrl(
-      launch.url,
-      {
-        navigate,
-      },
-    );
-  }
-
-  listenerHandles.push(
-    await App.addListener(
-      'appUrlOpen',
-      ({ url }) => {
-        void handleNativeAppUrl(
-          url,
-          {
-            navigate,
-          },
-        );
-      },
-    ),
-  );
+  // Register first so a link arriving during startup is not missed.
+  listenerHandles.push(await App.addListener('appUrlOpen', ({ url }) => {
+    void handleNativeAppUrl(url, { navigate });
+  }));
+  const launch = await App.getLaunchUrl();
+  if (launch?.url) await handleNativeAppUrl(launch.url, { navigate });
 
   listenerHandles.push(
     await App.addListener(

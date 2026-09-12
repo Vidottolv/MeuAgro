@@ -1,3 +1,4 @@
+import { enhancePasswordInputs } from '../../components/passwordInput.js';
 import { signIn } from '../../services/authService.js';
 import {
   getAuthErrorMessage,
@@ -161,6 +162,8 @@ export function renderLoginPage() {
     );
   }
 
+  const cleanupPasswords = enhancePasswordInputs(app);
+
   const form =
     document.querySelector(
       '#login-form',
@@ -253,6 +256,7 @@ export function renderLoginPage() {
   );
 
   return () => {
+    cleanupPasswords();
     form.removeEventListener(
       'submit',
       handleSubmit,

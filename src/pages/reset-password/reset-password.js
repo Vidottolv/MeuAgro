@@ -1,3 +1,4 @@
+import { enhancePasswordInputs } from '../../components/passwordInput.js';
 import {
   getSession,
   updatePassword,
@@ -104,6 +105,8 @@ export async function renderResetPasswordPage() {
       </section>
     </main>
   `;
+
+  const cleanupPasswords = enhancePasswordInputs(app);
 
   const form =
     document.querySelector(
@@ -229,6 +232,7 @@ export async function renderResetPasswordPage() {
   );
 
   return () => {
+    cleanupPasswords();
     form.removeEventListener(
       'submit',
       handleSubmit,

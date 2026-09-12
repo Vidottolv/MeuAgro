@@ -260,13 +260,13 @@ async function patchAppBuildGradle() {
   gradle =
     gradle.replace(
       /versionCode\s+\d+/,
-      'versionCode 18',
+      'versionCode 19',
     );
 
   gradle =
     gradle.replace(
       /versionName\s+["'][^"']+["']/,
-      'versionName "0.17.4"',
+      'versionName "0.17.7"',
     );
 
   await writeFile(

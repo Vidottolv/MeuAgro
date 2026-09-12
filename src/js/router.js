@@ -1028,6 +1028,7 @@ export async function renderRoute() {
 
     if (
       route.publicOnly &&
+      !new URLSearchParams(window.location.search).has('nativeError') &&
       session
     ) {
       navigate(

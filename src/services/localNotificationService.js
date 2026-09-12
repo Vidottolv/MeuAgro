@@ -263,7 +263,6 @@ export async function syncNativeHarvestNotifications(
           channelId:
             HARVEST_CHANNEL_ID,
           autoCancel: true,
-          foreground: true,
           isExactNotification:
             exactAlarm ===
             'granted',
@@ -372,7 +371,6 @@ export async function scheduleTestNotification() {
         channelId:
           HARVEST_CHANNEL_ID,
         autoCancel: true,
-        foreground: true,
         isExactNotification:
           exactAlarm ===
           'granted',

@@ -52,7 +52,17 @@ async function mediaResultToFile(
   result,
   prefix,
 ) {
-  if (!result?.webPath) {
+  const previewPath =
+    result?.webPath ||
+    (
+      result?.path
+        ? Capacitor.convertFileSrc(
+            result.path,
+          )
+        : null
+    );
+
+  if (!previewPath) {
     throw new Error(
       'A imagem retornada pelo dispositivo não possui um caminho de leitura válido.',
     );
@@ -60,7 +70,7 @@ async function mediaResultToFile(
 
   const response =
     await fetch(
-      result.webPath,
+      previewPath,
     );
 
   if (!response.ok) {
@@ -74,7 +84,7 @@ async function mediaResultToFile(
 
   const format =
     normalizeFormat(
-      result.metadata?.format ||
+      result.format ||
       blob.type
         ?.split('/')?.[1],
     );
@@ -99,11 +109,15 @@ async function mediaResultToFile(
 
   return {
     file,
+    previewPath,
     webPath:
-      result.webPath,
+      result.webPath ||
+      previewPath,
     capturedAt:
-      result.metadata
-        ?.creationDate ||
+      result.exif
+        ?.DateTimeOriginal ||
+      result.exif
+        ?.DateTimeDigitized ||
       null,
   };
 }

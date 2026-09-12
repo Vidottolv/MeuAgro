@@ -1,26 +1,6 @@
 import { supabase } from '../js/supabase.js';
 
-import {
-  Capacitor,
-} from '@capacitor/core';
-
-import {
-  nativeAuthUrl,
-} from '../constants/nativeApp.js';
-
-function authRedirectUrl(
-  route,
-) {
-  if (
-    Capacitor.isNativePlatform()
-  ) {
-    return nativeAuthUrl(
-      route,
-    );
-  }
-
-  return `${window.location.origin}${route}`;
-}
+import { getAuthRedirectUrl } from './authRedirectService.js';
 
 function requireSupabase() {
   if (!supabase) {
@@ -45,7 +25,7 @@ export async function signUp({
       password,
       options: {
         emailRedirectTo:
-          authRedirectUrl('/login?confirmed=1'),
+          getAuthRedirectUrl('confirmation'),
         data: {
           full_name: fullName.trim(),
         },
@@ -91,7 +71,7 @@ export async function requestPasswordReset(
       email.trim().toLowerCase(),
       {
         redirectTo:
-          authRedirectUrl('/reset-password'),
+          getAuthRedirectUrl('recovery'),
       },
     );
 

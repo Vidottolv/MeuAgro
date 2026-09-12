@@ -1,3 +1,7 @@
+import { supabase } from './supabase.js';
+import { consumeAuthCallback, hasAuthCallback } from '../services/authCallbackService.js';
+import { Capacitor } from '@capacitor/core';
+let processingAuthCallback = false;
 import {
   initializeRouter,
   navigate,
@@ -28,7 +32,7 @@ onAuthStateChange((event) => {
   window.setTimeout(() => {
     if (
       event ===
-      'PASSWORD_RECOVERY'
+      'PASSWORD_RECOVERY' && !processingAuthCallback
     ) {
       navigate(
         '/reset-password',
@@ -53,6 +57,14 @@ onAuthStateChange((event) => {
             );
           },
         );
+
+      /*
+       * A própria tela de login e os deep links nativos executam
+       * a navegação necessária. Não renderizamos a rota novamente
+       * aqui porque eventos de Auth também podem acontecer ao
+       * retomar o aplicativo e isso destruiria formulários em edição.
+       */
+      return;
     }
 
     if (
@@ -74,21 +86,37 @@ onAuthStateChange((event) => {
             replace: true,
           },
         );
-
-        return;
       }
+
+      return;
     }
 
-    void renderRoute();
+    /*
+     * INITIAL_SESSION, TOKEN_REFRESHED e USER_UPDATED não
+     * precisam recriar a página atual. O Supabase mantém a
+     * sessão internamente e preservar o DOM evita perder drafts.
+     */
   }, 0);
 });
 
-initializeRouter();
-
-void initializeNativeRuntime({
-  navigate,
-  getCurrentPath,
-});
+async function startApp() {
+  if (!Capacitor.isNativePlatform() && hasAuthCallback(window.location.href)) {
+    processingAuthCallback = true;
+    let route;
+    try {
+      route = await consumeAuthCallback(window.location.href, supabase, { origin: window.location.origin });
+    } catch (error) {
+      route = '/login?nativeError=' + encodeURIComponent(error.message);
+    } finally {
+      // Remove credentials and one-time codes from browser history, including failures.
+      window.history.replaceState({}, '', route || '/login');
+      processingAuthCallback = false;
+    }
+  }
+  initializeRouter();
+  await initializeNativeRuntime({ navigate, getCurrentPath });
+}
+void startApp().catch(() => console.error('Não foi possível inicializar o aplicativo.'));
 
 void bootstrapNotificationRuntime({
   navigate,

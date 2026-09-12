@@ -49,7 +49,8 @@ export const supabase =
           auth: {
             autoRefreshToken: true,
             persistSession: true,
-            detectSessionInUrl: true,
+            // Callback service owns URL consumption before the router starts.
+            detectSessionInUrl: false,
           },
         },
       )

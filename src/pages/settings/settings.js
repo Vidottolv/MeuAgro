@@ -41,6 +41,15 @@ import {
   setTheme,
 } from '../../services/themeService.js';
 
+const refreshCurrentRoute =
+  () => {
+    window.dispatchEvent(
+      new PopStateEvent(
+        'popstate',
+      ),
+    );
+  };
+
 function pad2(value) {
   return String(value)
     .padStart(2, '0');
@@ -748,7 +757,7 @@ export async function renderSettingsPage({
           },
         );
 
-        window.location.reload();
+        refreshCurrentRoute();
       } catch (error) {
         console.error(
           'Erro ao salvar preferências:',
@@ -791,7 +800,7 @@ export async function renderSettingsPage({
 
         await syncHarvestNotifications();
 
-        window.location.reload();
+        refreshCurrentRoute();
       } catch (error) {
         showToast(
           getDataErrorMessage(
@@ -815,7 +824,7 @@ export async function renderSettingsPage({
 
         window.setTimeout(
           () => {
-            window.location.reload();
+            refreshCurrentRoute();
           },
           700,
         );

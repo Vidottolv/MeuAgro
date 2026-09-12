@@ -300,7 +300,7 @@ export async function renderEvolutionPhotoFormPage({
               <img
                 id="photo-preview"
                 class="photo-upload-field__preview"
-                alt="Prévia da imagem selecionada"
+                alt=""
                 hidden
               />
             </div>
@@ -467,7 +467,9 @@ export async function renderEvolutionPhotoFormPage({
     );
 
   let previewUrl = null;
+  let previewUsesObjectUrl = false;
   let selectedFile = null;
+  let disposed = false;
 
   const setSourceButtonLoading =
     (
@@ -516,13 +518,25 @@ export async function renderEvolutionPhotoFormPage({
 
   const clearPreview =
     () => {
-      if (previewUrl) {
+      if (
+        previewUrl &&
+        previewUsesObjectUrl
+      ) {
         URL.revokeObjectURL(
           previewUrl,
         );
-
-        previewUrl = null;
       }
+
+      previewUrl = null;
+      previewUsesObjectUrl =
+        false;
+
+      preview.removeAttribute(
+        'src',
+      );
+
+      preview.alt = '';
+      preview.hidden = true;
     };
 
   const setSelectedFile =
@@ -532,8 +546,13 @@ export async function renderEvolutionPhotoFormPage({
         sourceLabel =
           'Imagem selecionada',
         capturedAt = null,
+        previewPath = null,
       } = {},
     ) => {
+      if (disposed) {
+        return false;
+      }
+
       clearPreview();
 
       const validation =
@@ -549,7 +568,8 @@ export async function renderEvolutionPhotoFormPage({
           validation,
         );
 
-        preview.hidden = true;
+        clearPreview();
+
         placeholder.hidden =
           false;
 
@@ -566,13 +586,27 @@ export async function renderEvolutionPhotoFormPage({
         '',
       );
 
-      previewUrl =
-        URL.createObjectURL(
-          file,
-        );
+      if (previewPath) {
+        previewUrl =
+          previewPath;
+
+        previewUsesObjectUrl =
+          false;
+      } else {
+        previewUrl =
+          URL.createObjectURL(
+            file,
+          );
+
+        previewUsesObjectUrl =
+          true;
+      }
 
       preview.src =
         previewUrl;
+
+      preview.alt =
+        sourceLabel;
 
       preview.hidden = false;
       placeholder.hidden =
@@ -644,7 +678,10 @@ export async function renderEvolutionPhotoFormPage({
         const selected =
           await choosePhotoFromGallery();
 
-        if (!selected) {
+        if (
+          !selected ||
+          disposed
+        ) {
           return;
         }
 
@@ -655,6 +692,9 @@ export async function renderEvolutionPhotoFormPage({
               'Imagem da galeria',
             capturedAt:
               selected.capturedAt,
+            previewPath:
+              selected.previewPath ||
+              selected.webPath,
           },
         );
       } catch (error) {
@@ -697,6 +737,10 @@ export async function renderEvolutionPhotoFormPage({
         const captured =
           await takePhotoWithCamera();
 
+        if (disposed) {
+          return;
+        }
+
         setSelectedFile(
           captured.file,
           {
@@ -706,6 +750,9 @@ export async function renderEvolutionPhotoFormPage({
               captured.capturedAt ||
               new Date()
                 .toISOString(),
+            previewPath:
+              captured.previewPath ||
+              captured.webPath,
           },
         );
       } catch (error) {
@@ -952,6 +999,8 @@ export async function renderEvolutionPhotoFormPage({
   );
 
   return () => {
+    disposed = true;
+
     clearPreview();
 
     fileInput.removeEventListener(

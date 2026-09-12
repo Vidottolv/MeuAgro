@@ -1,3 +1,4 @@
+import { isAuthCallbackUrl } from '../services/authCallbackService.js';
 export const NATIVE_APP = {
   appId: 'com.meuagro.app',
   appName: 'Meu Agro',
@@ -8,10 +9,7 @@ export const NATIVE_APP = {
 export function isNativeAuthUrl(
   value,
 ) {
-  return String(value || '')
-    .startsWith(
-      `${NATIVE_APP.scheme}://${NATIVE_APP.authHost}`,
-    );
+  return isAuthCallbackUrl(value, { native: true });
 }
 
 export function nativeAuthUrl(

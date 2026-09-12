@@ -170,6 +170,10 @@
   object-fit: contain;
 }
 
+.photo-upload-field__preview[hidden] {
+  display: none !important;
+}
+
 .photo-viewer {
   position: fixed;
   inset: 0;
