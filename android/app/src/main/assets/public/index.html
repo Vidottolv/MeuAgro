@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Meu Agro - gestão de propriedades, plantios, estoque e colheitas."
+    />
+    <meta name="theme-color" content="#1f5d3a" />
+    <title>Meu Agro</title>
+
+    <script>
+      (() => {
+        try {
+          const storedTheme =
+            window.localStorage.getItem(
+              'meu-agro:appearance-theme',
+            );
+
+          const theme =
+            storedTheme === 'dark'
+              ? 'dark'
+              : 'light';
+
+          document.documentElement.dataset.theme =
+            theme;
+
+          document.documentElement.style.colorScheme =
+            theme;
+
+          const themeColor =
+            document.querySelector(
+              'meta[name="theme-color"]',
+            );
+
+          if (themeColor) {
+            themeColor.setAttribute(
+              'content',
+              theme === 'dark'
+                ? '#0f1511'
+                : '#1f5d3a',
+            );
+          }
+        } catch {
+          document.documentElement.dataset.theme =
+            'light';
+        }
+      })();
+    </script>
+
+    <link rel="icon" href="data:," />
+
+    <script type="module" crossorigin src="./assets/index-DdThd6ff.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BPpv54Ar.css">
+  </head>
+
+  <body>
+    <div id="app" class="app-root"></div>
+
+    <div
+      id="toast-container"
+      class="toast-container"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+    <div id="modal-root"></div>
+
+  </body>
+</html>

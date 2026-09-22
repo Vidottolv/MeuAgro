@@ -1,5 +1,6 @@
 import { supabase } from './supabase.js';
-import { consumeAuthCallback, hasAuthCallback } from '../services/authCallbackService.js';
+import {hasAuthCallback} from '../services/authCallbackService.js';
+import {completeAuthCallback} from '../services/authCallbackRouter.js';
 import { Capacitor } from '@capacitor/core';
 let processingAuthCallback = false;
 import {
@@ -104,7 +105,7 @@ async function startApp() {
     processingAuthCallback = true;
     let route;
     try {
-      route = await consumeAuthCallback(window.location.href, supabase, { origin: window.location.origin });
+      route = await completeAuthCallback(window.location.href, supabase, { origin: window.location.origin });
     } catch (error) {
       route = '/login?nativeError=' + encodeURIComponent(error.message);
     } finally {

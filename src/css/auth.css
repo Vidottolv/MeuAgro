@@ -165,3 +165,5 @@
   color: var(--color-text-soft); cursor: pointer;
 }
 .password-input__toggle:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
+
+.auth-provider{margin:0 0 18px}.google-sign-in{display:flex;width:100%;min-height:44px;align-items:center;justify-content:center;gap:12px;padding:10px 12px;border:1px solid #747775;border-radius:6px;background:#fff;color:#1f1f1f;font:500 14px Arial,sans-serif;cursor:pointer}.google-sign-in svg{flex:0 0 20px}.google-sign-in:hover:not(:disabled){background:#f2f2f2}.google-sign-in:disabled{opacity:.65;cursor:wait}.google-sign-in:focus-visible{outline:3px solid var(--color-primary-700);outline-offset:3px}.auth-divider{display:flex;align-items:center;gap:12px;margin-top:18px;color:var(--color-text-soft);font-size:.8rem}.auth-divider::before,.auth-divider::after{content:'';height:1px;flex:1;background:var(--color-border)}

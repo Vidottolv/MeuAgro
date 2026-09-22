@@ -1,3 +1,4 @@
+import {googleSignInButton, bindGoogleSignIn} from '../../components/googleSignIn.js';
 import { enhancePasswordInputs } from '../../components/passwordInput.js';
 import { signIn } from '../../services/authService.js';
 import {
@@ -48,6 +49,8 @@ export function renderLoginPage() {
             class="form-message"
             hidden
           ></div>
+
+          ${googleSignInButton()}
 
           <form
             id="login-form"
@@ -174,6 +177,8 @@ export function renderLoginPage() {
       '#login-submit',
     );
 
+  const cleanupGoogle = bindGoogleSignIn(app, {feedback, form, destination:params.get('redirect')});
+
   const handleSubmit = async (
     event,
   ) => {
@@ -257,6 +262,7 @@ export function renderLoginPage() {
 
   return () => {
     cleanupPasswords();
+    cleanupGoogle();
     form.removeEventListener(
       'submit',
       handleSubmit,

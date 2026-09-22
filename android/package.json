@@ -1,7 +1,7 @@
 {
   "name": "meu-agro",
   "private": true,
-  "version": "0.25.0",
+  "version": "0.26.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -14,7 +14,7 @@
     "android:doctor": "node scripts/android-doctor.mjs",
     "android:apk": "npm run android:sync && node scripts/android-gradle.mjs assembleDebug",
     "android:aab": "npm run android:sync && node scripts/android-gradle.mjs bundleRelease",
-    "test:auth": "node --test tests/auth.test.mjs",
+    "test:auth": "node --test tests/auth.test.mjs tests/oauth.test.mjs",
     "test:commerce": "node --test tests/commerce-database.test.mjs",
     "test": "npm run test:auth && npm run test:commerce && npm run test:trade && npm run test:orders && npm run test:delivery && npm run test:sales && npm run test:improvements && npm run test:management",
     "test:trade": "node --test tests/trade-database.test.mjs",
@@ -27,6 +27,7 @@
   "dependencies": {
     "@capacitor/android": "8.5.1",
     "@capacitor/app": "8.1.1",
+    "@capacitor/browser": "8.0.4",
     "@capacitor/camera": "8.2.4",
     "@capacitor/core": "8.5.1",
     "@capacitor/local-notifications": "8.3.1",

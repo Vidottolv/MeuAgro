@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "258708475434",
+    "project_id": "meu-agro-31dd0",
+    "storage_bucket": "meu-agro-31dd0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258708475434:android:283181c334d41571183d53",
+        "android_client_info": {
+          "package_name": "com.meuagro.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXNqhZwsjiL9maRdCkaZzg1xr21AnxLUg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,5 @@
-import { consumeAuthCallback } from './authCallbackService.js';
+import {completeAuthCallback} from './authCallbackRouter.js';
+import {closeAuthBrowser} from './authProviderService.js';
 import {
   App,
 } from '@capacitor/app';
@@ -34,12 +35,14 @@ export function handleNativeAppUrl(nativeUrl, { navigate } = {}) {
   const task = callbackQueue.then(async () => {
     if (nativeUrl === lastHandledUrl) return true;
     try {
-      const route = await consumeAuthCallback(nativeUrl, supabase, { native: true });
+      const route = await completeAuthCallback(nativeUrl, supabase, { native: true });
       lastHandledUrl = nativeUrl;
+      await closeAuthBrowser();
       navigate?.(route, { replace: true });
       return true;
-    } catch {
-      navigate?.('/login?nativeError=' + encodeURIComponent('Não foi possível validar o link. Solicite um novo e-mail e tente novamente.'), { replace: true });
+    } catch (error) {
+      await closeAuthBrowser();
+      navigate?.('/login?nativeError=' + encodeURIComponent(error.message || 'Não foi possível concluir a autenticação. Tente novamente.'), { replace: true });
       return false;
     }
   });

@@ -1,3 +1,4 @@
+import {googleSignInButton, bindGoogleSignIn} from '../../components/googleSignIn.js';
 import { enhancePasswordInputs } from '../../components/passwordInput.js';
 import {
   signUp,
@@ -48,6 +49,8 @@ export function renderRegisterPage() {
             class="form-message"
             hidden
           ></div>
+
+          ${googleSignInButton()}
 
           <form
             id="register-form"
@@ -163,6 +166,8 @@ export function renderRegisterPage() {
     document.querySelector(
       '#register-submit',
     );
+
+  const cleanupGoogle = bindGoogleSignIn(app, {feedback, form, destination:'/dashboard'});
 
   const handleSubmit = async (
     event,
@@ -289,6 +294,7 @@ export function renderRegisterPage() {
 
   return () => {
     cleanupPasswords();
+    cleanupGoogle();
     form.removeEventListener(
       'submit',
       handleSubmit,

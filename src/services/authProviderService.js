@@ -1,24 +1,52 @@
-import { Capacitor } from '@capacitor/core';
-import { supabase } from '../js/supabase.js';
-import { getAuthRedirectUrl } from './authRedirectService.js';
+import {Capacitor} from '@capacitor/core';
+import {Browser} from '@capacitor/browser';
+import {createClient} from '@supabase/supabase-js';
+import {supabase} from '../js/supabase.js';
+import {getAuthRedirectUrl} from './authRedirectService.js';
+import {createOAuthFlow, verifierStorage} from './oauthFlow.js';
 
-// Disabled until credentials and consent screens are configured in Supabase/providers.
 export const AUTH_PROVIDERS = Object.freeze({
-  google: { enabled: import.meta.env?.VITE_AUTH_GOOGLE_ENABLED === 'true' },
-  apple: { enabled: import.meta.env?.VITE_AUTH_APPLE_ENABLED === 'true' },
+  google: {enabled:import.meta.env?.VITE_AUTH_GOOGLE_ENABLED === 'true'},
+  apple: {enabled:false},
 });
-export async function signInWithProvider(provider, { openExternal } = {}) {
-  if (!Object.hasOwn(AUTH_PROVIDERS, provider) || !AUTH_PROVIDERS[provider].enabled) {
-    throw new Error('Este provedor de login ainda não está habilitado.');
-  }
+let flow;
+function getFlow() {
+  if (flow) return flow;
   if (!supabase) throw new Error('Autenticação não configurada.');
-  const native = Capacitor.isNativePlatform();
-  if (native && typeof openExternal !== 'function') throw new Error('Configure o navegador externo para autenticação nativa.');
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider, options: { redirectTo: getAuthRedirectUrl('oauth'), skipBrowserRedirect: true },
+  const projectUrl = import.meta.env.VITE_SUPABASE_URL.trim();
+  const key = 'meuagro-oauth-' + new URL(projectUrl).hostname;
+  const storage = globalThis.localStorage;
+  const client = createClient(projectUrl, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY.trim(), {
+    auth:{flowType:'pkce', storageKey:key, storage:verifierStorage(storage,key), persistSession:true, autoRefreshToken:false, detectSessionInUrl:false},
   });
-  if (error) throw error;
-  if (!data.url) throw new Error('O provedor não retornou um endereço de login.');
-  if (native) await openExternal(data.url);
-  else window.location.assign(data.url);
+  flow = createOAuthFlow({client, sessionClient:supabase, storage, key, projectUrl,
+    redirectUrl:() => {
+      const url = getAuthRedirectUrl('oauth');
+      if (!Capacitor.isNativePlatform() && new URL(url).origin !== location.origin) throw new Error('Abra o Meu Agro pelo endereço configurado em VITE_APP_URL para entrar com Google.');
+      return url;
+    },
+    open:async url => {
+      if (Capacitor.isNativePlatform()) await Browser.open({url, toolbarColor:'#1f5d3a'});
+      else location.assign(url);
+    },
+  });
+  return flow;
+}
+export async function signInWithProvider(provider, {destination} = {}) {
+  if (provider !== 'google' || !AUTH_PROVIDERS.google.enabled) throw new Error('O login Google ainda não foi habilitado.');
+  return getFlow().start(destination);
+}
+export function cancelProviderSignIn() {
+  // A page reload may leave an earlier Google attempt in storage.
+  if (AUTH_PROVIDERS.google.enabled && supabase) getFlow().cancel();
+}
+export const completeProviderSignIn = value => getFlow().finish(value);
+export async function closeAuthBrowser() {
+  if (Capacitor.isNativePlatform()) await Browser.close().catch(() => {});
+}
+export function providerErrorMessage(error) {
+  const message = error?.message || '';
+  if (/provider.*(disabled|not enabled)|unsupported provider/i.test(message)) return 'O login Google ainda precisa ser configurado pelo responsável pelo aplicativo.';
+  if (/fetch|network|failed to load/i.test(message)) return 'Não foi possível conectar ao Google. Confira sua internet e tente novamente.';
+  return /[áàãâéêíóôõúç]/i.test(message) ? message : 'Não foi possível iniciar o login Google. Tente novamente ou entre com e-mail e senha.';
 }
