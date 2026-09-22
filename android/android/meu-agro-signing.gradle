@@ -1,0 +1,32 @@
+def meuAgroKeystorePath = System.getenv('MEU_AGRO_KEYSTORE_PATH')
+def meuAgroKeystorePassword = System.getenv('MEU_AGRO_KEYSTORE_PASSWORD')
+def meuAgroKeyAlias = System.getenv('MEU_AGRO_KEY_ALIAS')
+def meuAgroKeyPassword = System.getenv('MEU_AGRO_KEY_PASSWORD')
+
+if (
+    meuAgroKeystorePath &&
+    meuAgroKeystorePassword &&
+    meuAgroKeyAlias &&
+    meuAgroKeyPassword
+) {
+    android {
+        signingConfigs {
+            meuAgroRelease {
+                storeFile file(meuAgroKeystorePath)
+                storePassword meuAgroKeystorePassword
+                keyAlias meuAgroKeyAlias
+                keyPassword meuAgroKeyPassword
+            }
+        }
+
+        buildTypes {
+            release {
+                signingConfig signingConfigs.meuAgroRelease
+            }
+        }
+    }
+
+    logger.lifecycle('Meu Agro: assinatura release configurada por variáveis de ambiente.')
+} else {
+    logger.lifecycle('Meu Agro: assinatura release não configurada; bundleRelease será gerado sem assinatura.')
+}

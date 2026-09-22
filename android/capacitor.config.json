@@ -1,0 +1,30 @@
+{
+  "appId": "com.meuagro.app",
+  "appName": "Meu Agro",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 650,
+      "launchFadeOutDuration": 220,
+      "backgroundColor": "#1f5d3aff",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_INSIDE",
+      "showSpinner": false,
+      "splashFullScreen": false,
+      "splashImmersive": false
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_meu_agro",
+      "iconColor": "#39705F"
+    }
+  }
+}

@@ -1,0 +1,72 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {salesFixture} from './sales-fixture.mjs';
+test('Vendas, custos e comissões',async t=>{
+ const f=await salesFixture();const {db,ids,as,commerce,command,fulfillment,rows,save,report}=f;
+ try{
+  await t.test('Migração reaplicável',async()=>db.exec(f.migration));
+  await as(1);await commerce('enable',{name:'Responsável'});const personal=(await rows('commerce_sellers')).find(s=>s.kind==='personal').id;
+  const seller=(await commerce('create_company',{name:'Empresa Agro'})).seller_id;
+  for(const n of [2,3]){await commerce('invite',{seller_id:seller,email:`user${n}@example.test`});const inv=(await rows('commerce_invitations')).find(i=>i.email===`user${n}@example.test`);await as(n);await commerce('enable',{name:'Representante '+n});await commerce('accept_invite',{token:inv.token});await as(1);}
+  const productData={seller_id:seller,name:'Adubo',package_name:'Saco',base_unit:'kg',package_size:25,reference_price:110,availability:'available'};
+  const product=(await command('save_product',productData)).id;
+  await as(2);await command('invite_buyer',{seller_id:seller,email:'user4@example.test'});const inv=(await rows('trade_invitations'))[0];await as(4);
+  const connection=(await command('accept_connection',{token:inv.token,name:'Produtor'})).id;
+  const newOrder=async(agent)=>{await as(4);const r=(await command('create_request',{connection_id:connection,delivery_address:'Fazenda, portão 100',items:[{product_id:product,quantity:2}]})).id;await as(agent);const q=(await command('send_quote',{request_id:r,items:[{product_id:product,unit_price:110}],discount:20,freight:30,valid_until:new Date(Date.now()+86400000).toISOString(),delivery_days:3,payment_terms:'Na entrega'})).id;await as(4);return (await command('accept_quote',{request_id:r,quote_id:q})).id;};
+  const receive=async(id,agent)=>{await as(agent);await fulfillment('mark_delivery',{order_id:id});await as(4);await fulfillment('confirm_receipt',{order_id:id,delivery_version:1,items:[{product_id:product,input_id:''}]});};
+  const first=await newOrder(2);
+  const data={order_id:first,expected_version:0,items:[{product_id:product,unit_cost:60}],delivery_cost:10,other_cost:5,commission_percent:10,reason:'Apuração inicial',result_amount:999};
+  await t.test('Produtor não acessa painel comercial nem custos',async()=>{await assert.rejects(report(seller));assert.equal((await rows('trade_financial_versions')).length,0);await assert.rejects(save(data));});
+  await as(2);
+  await t.test('Representante não informa custos ou comissão',async()=>assert.rejects(save(data)));
+  await as(1);
+  await t.test('Pedidos não recebidos ficam separados das vendas',async()=>{const r=await report(seller);assert.equal(r.totals.received_count,0);assert.equal(r.totals.pending_count,1);assert.equal(r.totals.sales_total,0);assert.equal(r.totals.pending_total,230);});
+  await t.test('Valida itens, custos, percentual, descrição e versão',async()=>{
+   for(const change of [{items:[]},{items:[{product_id:randomUUID(),unit_cost:10}]},{items:[{product_id:product,unit_cost:-1}]},{items:[{product_id:product,unit_cost:''}]},{items:[{product_id:product,unit_cost:1.001}]},{commission_percent:101},{commission_percent:-1},{delivery_cost:-1},{other_cost:''},{reason:'  '},{expected_version:2}])await assert.rejects(save({...data,...change}));
+  });
+  const op=randomUUID();await save(data,op);
+  await t.test('Calcula comissão sem frete e resultado sem confiar no cliente',async()=>{const v=(await rows('trade_financial_versions'))[0];assert.equal(Number(v.commission_base),200);assert.equal(Number(v.commission_amount),20);assert.equal(Number(v.product_cost),120);assert.equal(Number(v.result_amount),75);});
+  await t.test('Reenvio não duplica apuração; dados diferentes com mesma chave são negados',async()=>{await save(data,op);assert.equal((await rows('trade_financial_versions')).length,1);await assert.rejects(save({...data,reason:'Outra apuração'},op));});
+  await t.test('Apuração prevista não aumenta comissão realizada',async()=>{const r=await report(seller);assert.equal(r.totals.commission_total,0);assert.equal(r.orders[0].commission_amount,20);});
+  await receive(first,2);await as(1);
+  await t.test('Recebimento inclui receita, custos, resultado e margem',async()=>{const r=await report(seller);assert.equal(r.totals.sales_total,230);assert.equal(r.totals.cost_total,135);assert.equal(r.totals.commission_total,20);assert.equal(r.totals.result_total,75);assert.equal(r.totals.margin_percent,32.61);assert.equal(r.products[0].base_quantity,50);});
+  await as(2);
+  await t.test('Representante vê sua comissão, sem custos ou resultado privados',async()=>{const r=await report(seller);assert.equal(r.totals.commission_total,20);for(const key of ['cost_total','result_total','margin_percent'])assert.ok(!(key in r.totals));for(const key of ['product_cost','delivery_cost','other_cost','result_amount'])assert.ok(!(key in r.orders[0]));assert.equal((await rows('trade_financial_versions')).length,0);});
+  await as(3);
+  await t.test('Outro representante não vê vendas de colegas',async()=>assert.equal((await report(seller)).orders.length,0));
+  await as(1);await command('assign_agent',{connection_id:connection,agent_id:ids[2]});
+  await as(2);
+  await t.test('Transferência do atendimento não transfere comissão já atribuída',async()=>{const r=await report(seller);assert.equal(r.orders.length,1);assert.equal(r.orders[0].can_open,false);assert.equal(r.orders[0].agent_id,ids[1]);assert.equal((await rows('trade_orders')).length,0);});
+  await as(1);
+  await save({...data,expected_version:1,commission_percent:12.5,reason:'Correção do percentual acordado'});
+  await t.test('Correção cria histórico e usa a versão atual sem duplicar venda',async()=>{const versions=(await rows('trade_financial_versions')).sort((a,b)=>a.version-b.version);assert.equal(versions.length,2);assert.equal(Number(versions[0].commission_amount),20);assert.equal(Number(versions[1].commission_amount),25);const r=await report(seller);assert.equal(r.totals.received_count,1);assert.equal(r.totals.result_total,70);});
+  await t.test('Edição desatualizada não sobrescreve a versão atual',async()=>assert.rejects(save({...data,expected_version:1})));
+  await t.test('Pedidos, estoque e preços não mudam ao apurar custos',async()=>{assert.equal(Number((await rows('trade_orders'))[0].total),230);await as(4);assert.equal((await rows('inventory_lots')).length,1);assert.equal(Number((await rows('inventory_lots'))[0].total_price),230);await as(1);});
+  await command('save_product',{...productData,product_id:product,package_size:50});const second=await newOrder(3);await receive(second,3);await as(1);
+  await t.test('Custos ausentes não são tratados como zero ou lucro',async()=>{const r=await report(seller);assert.equal(r.totals.missing_count,1);assert.equal(r.totals.sales_total,460);assert.equal(r.totals.result_total,null);assert.equal(r.totals.cost_total,null);assert.equal(r.totals.commission_total,null);});
+  await t.test('Volumes mantêm embalagens de tamanhos diferentes separadas',async()=>{const p=(await report(seller)).products;assert.equal(p.length,2);assert.equal(p.reduce((sum,p)=>sum+p.base_quantity,0),150);});
+  await save({...data,order_id:second,items:[{product_id:product,unit_cost:150}]});
+  await t.test('Resultado negativo é preservado',async()=>{const r=await report(seller);assert.equal(r.orders.find(o=>o.id===second).result_amount,-105);assert.equal(r.totals.result_total,-35);});
+  await t.test('Atuação própria vazia retorna totais zero, sem misturar empresas',async()=>{const r=await report(personal);assert.equal(r.totals.order_count,0);assert.equal(r.totals.sales_total,0);assert.equal(r.totals.margin_percent,null);});
+  await t.test('Período inválido ou amplo e offset negativo são rejeitados',async()=>{await assert.rejects(report(seller,'2026-02-01','2026-01-01'));await assert.rejects(report(seller,'2020-01-01','2030-01-01'));await assert.rejects(report(seller,f.from,f.to,-1));});
+  await db.exec('reset role');const originalDate=(await db.query('select received_at from public.trade_orders where id=$1',[first])).rows[0].received_at;await db.query("update public.trade_orders set received_at='2026-09-15 01:30:00+00' where id=$1",[first]);await as(2);
+  await t.test('Filtro considera a data de Brasília no recebimento',async()=>{assert.equal((await report(seller,'2026-09-14','2026-09-14')).orders.length,1);assert.equal((await report(seller,'2026-09-15','2026-09-15')).orders.length,0);});
+  await db.exec('reset role');await db.query('update public.trade_orders set received_at=$1 where id=$2',[originalDate,first]);await as(1);
+  await t.test('Escritas diretas e exclusão do histórico são bloqueadas',async()=>{await assert.rejects(db.exec('delete from public.trade_financial_versions'));await assert.rejects(db.exec('update public.trade_financial_versions set version=version'));await assert.rejects(db.exec('insert into public.trade_financial_versions default values'));});
+  await db.exec('reset role');await db.query('update public.commerce_memberships set active=false where seller_id=$1 and user_id=$2',[seller,ids[1]]);await as(2);
+  await t.test('Representante removido perde acesso ao relatório',async()=>assert.rejects(report(seller)));
+  await as(5);
+  await t.test('Terceiro não acessa empresa ou apuração',async()=>{await assert.rejects(report(seller));await assert.rejects(save(data));});
+  await t.test('Paginação não corta os totais nem repete pedidos',async()=>{
+   for(let n=0;n<51;n++)await newOrder(3);
+   await as(1);const a=await report(seller),b=await report(seller,f.from,f.to,50);
+   assert.equal(a.totals.order_count,53);assert.equal(a.orders.length,50);assert.equal(b.orders.length,3);
+   assert.equal(b.totals.sales_total,460);assert.equal(new Set([...a.orders,...b.orders].map(o=>o.id)).size,53);
+  });
+  await as(null,'anon');
+  await t.test('Anônimo não executa RPCs financeiras',async()=>{await assert.rejects(report(seller));await assert.rejects(save(data));});
+  await db.exec('reset role');
+  await t.test('Reaplicar migração preserva histórico',async()=>{await db.exec(f.migration);assert.equal((await rows('trade_financial_versions')).length,3);});
+ }finally{await db.close();}
+});

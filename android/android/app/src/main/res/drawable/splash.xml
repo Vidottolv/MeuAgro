@@ -1,0 +1,14 @@
+<layer-list
+    xmlns:android="http://schemas.android.com/apk/res/android"
+>
+    <item
+        android:drawable="@color/launcherBackground"
+    />
+
+    <item
+        android:width="112dp"
+        android:height="112dp"
+        android:gravity="center"
+        android:drawable="@drawable/ic_splash_logo"
+    />
+</layer-list>

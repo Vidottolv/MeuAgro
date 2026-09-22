@@ -1,0 +1,197 @@
+.consultant-toolbar {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.consultant-list {
+  display: grid;
+  gap: 12px;
+}
+
+.consultant-card {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 8px 22px rgba(37, 56, 44, 0.05);
+}
+
+.consultant-card__main {
+  display: block;
+  padding: 17px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.consultant-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.consultant-card__icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  place-items: center;
+  border-radius: 15px;
+  color: #315a48;
+  background: #e7f2ec;
+}
+
+.consultant-card__identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.consultant-card__identity h3 {
+  overflow: hidden;
+  font-size: 0.98rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consultant-card__identity p {
+  margin-top: 2px;
+  color: var(--color-text-soft);
+  font-size: 0.76rem;
+}
+
+.consultant-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 13px;
+  color: var(--color-text-soft);
+  font-size: 0.74rem;
+}
+
+.consultant-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.consultant-card__meta .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.consultant-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 17px 17px;
+}
+
+.consultant-status {
+  display: inline-flex;
+  min-height: 27px;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.consultant-status--active {
+  color: #1e603b;
+  background: #e0f3e6;
+}
+
+.consultant-status--inactive {
+  color: #785416;
+  background: #fff1d4;
+}
+
+.consultant-status--archived {
+  color: #6d5050;
+  background: #f2e7e7;
+}
+
+.consultant-detail-hero {
+  margin-bottom: 14px;
+  padding: 22px;
+  border-radius: var(--radius-xl);
+  color: #fff;
+  background:
+    linear-gradient(
+      140deg,
+      #244f40,
+      #4c7e68
+    );
+  box-shadow: var(--shadow-card);
+}
+
+.consultant-detail-hero__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.consultant-detail-hero h2 {
+  margin-top: 3px;
+  font-size: clamp(1.5rem, 6vw, 2rem);
+}
+
+.consultant-detail-hero p {
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.consultant-management-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.consultant-management-card p {
+  max-width: 520px;
+  margin-top: 3px;
+  color: var(--color-text-soft);
+  font-size: 0.78rem;
+}
+
+.consultant-management-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (min-width: 680px) {
+  .consultant-toolbar {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(320px, 0.9fr);
+  }
+
+  .consultant-list {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .consultant-management-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .consultant-management-card__actions {
+    width: 100%;
+  }
+
+  .consultant-management-card__actions .button {
+    flex: 1;
+  }
+}

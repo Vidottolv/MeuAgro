@@ -1,0 +1,597 @@
+.harvest-toolbar,
+.sale-toolbar {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.harvest-toolbar .field,
+.sale-toolbar .field {
+  margin-bottom: 0;
+}
+
+.harvest-list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.harvest-list-actions
+.button--primary {
+  margin-left: auto;
+}
+
+.harvest-list-summary,
+.sale-list-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.harvest-list-summary article,
+.sale-list-summary article {
+  padding: 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.harvest-list-summary span,
+.harvest-list-summary strong,
+.sale-list-summary span,
+.sale-list-summary strong {
+  display: block;
+}
+
+.harvest-list-summary span,
+.sale-list-summary span {
+  color: var(--color-text-soft);
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+
+.harvest-list-summary strong,
+.sale-list-summary strong {
+  margin-top: 4px;
+  font-size: 1rem;
+}
+
+.harvest-list,
+.sale-list,
+.cycle-harvest-list {
+  display: grid;
+  gap: 12px;
+}
+
+.harvest-card,
+.sale-card {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 8px 22px rgba(37, 56, 44, 0.05);
+}
+
+.harvest-card__main,
+.sale-card__main {
+  display: block;
+  padding: 17px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.harvest-card__top,
+.sale-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.harvest-card__icon,
+.sale-card__icon {
+  display: grid;
+  width: 45px;
+  height: 45px;
+  flex: 0 0 45px;
+  place-items: center;
+  border-radius: 14px;
+}
+
+.harvest-card__icon {
+  color: #7b5c16;
+  background: #f7efd4;
+}
+
+.sale-card__icon {
+  color: #315f4b;
+  background: #e4f1ea;
+}
+
+.harvest-card__identity,
+.sale-card__identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.harvest-card__identity h3,
+.sale-card__identity h3 {
+  overflow: hidden;
+  font-size: 0.96rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.harvest-card__identity p,
+.sale-card__identity p {
+  overflow: hidden;
+  margin-top: 2px;
+  color: var(--color-text-soft);
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.harvest-card__metrics,
+.sale-card__metrics {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.harvest-card__metrics > div,
+.sale-card__metrics > div {
+  padding: 9px;
+  border-radius: 11px;
+  background: var(--color-surface-soft);
+}
+
+.harvest-card__metrics span,
+.harvest-card__metrics strong,
+.sale-card__metrics span,
+.sale-card__metrics strong {
+  display: block;
+}
+
+.harvest-card__metrics span,
+.sale-card__metrics span {
+  color: var(--color-text-soft);
+  font-size: 0.65rem;
+}
+
+.harvest-card__metrics strong,
+.sale-card__metrics strong {
+  margin-top: 2px;
+  font-size: 0.74rem;
+}
+
+.harvest-card__sales {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-radius: 11px;
+  color: #315f4b;
+  background: #eaf4ee;
+  font-size: 0.72rem;
+}
+
+.sale-card__payment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  color: var(--color-text-soft);
+  font-size: 0.7rem;
+}
+
+.sale-card__payment .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.harvest-cycle-readonly {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.harvest-cycle-readonly__icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border-radius: 13px;
+  color: var(--color-primary-800);
+  background: var(--color-primary-100);
+}
+
+.harvest-cycle-readonly strong,
+.harvest-cycle-readonly span {
+  display: block;
+}
+
+.harvest-cycle-readonly strong {
+  font-size: 0.8rem;
+}
+
+.harvest-cycle-readonly span {
+  margin-top: 2px;
+  color: var(--color-text-soft);
+  font-size: 0.7rem;
+}
+
+.harvest-sale-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  color: #315f4b;
+  background: #eaf4ee;
+}
+
+.harvest-sale-hint .icon {
+  flex: 0 0 auto;
+}
+
+.harvest-sale-hint strong,
+.harvest-sale-hint span {
+  display: block;
+}
+
+.harvest-sale-hint strong {
+  font-size: 0.78rem;
+}
+
+.harvest-sale-hint span {
+  margin-top: 2px;
+  font-size: 0.71rem;
+}
+
+.harvest-detail-hero,
+.sale-detail-hero {
+  margin-bottom: 14px;
+  padding: 22px;
+  border-radius: var(--radius-xl);
+  color: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.harvest-detail-hero {
+  background:
+    linear-gradient(
+      140deg,
+      #62511c,
+      #8b7b35
+    );
+}
+
+.sale-detail-hero {
+  background:
+    linear-gradient(
+      140deg,
+      #285441,
+      #4f846c
+    );
+}
+
+.harvest-detail-hero__top,
+.sale-detail-hero__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.harvest-detail-hero h2,
+.sale-detail-hero h2 {
+  margin-top: 3px;
+  font-size:
+    clamp(
+      1.5rem,
+      6vw,
+      2rem
+    );
+}
+
+.harvest-detail-hero p,
+.sale-detail-hero p {
+  margin-top: 5px;
+  color:
+    rgba(
+      255,
+      255,
+      255,
+      0.82
+    );
+}
+
+.harvest-destination-badge {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #fff;
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.14
+    );
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-align: center;
+}
+
+.sale-detail-hero__value {
+  flex: 0 0 auto;
+  font-size: 1.15rem;
+  white-space: nowrap;
+}
+
+.harvest-detail-summary,
+.sale-detail-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.harvest-detail-summary article,
+.sale-detail-summary article {
+  padding: 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.harvest-detail-summary span,
+.harvest-detail-summary strong,
+.sale-detail-summary span,
+.sale-detail-summary strong {
+  display: block;
+}
+
+.harvest-detail-summary span,
+.sale-detail-summary span {
+  color: var(--color-text-soft);
+  font-size: 0.68rem;
+}
+
+.harvest-detail-summary strong,
+.sale-detail-summary strong {
+  margin-top: 3px;
+  font-size: 0.8rem;
+}
+
+.harvest-links-card {
+  overflow: hidden;
+  margin-top: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.harvest-link-row {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 13px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.harvest-link-row
++ .harvest-link-row {
+  border-top:
+    1px solid
+    var(--color-border);
+}
+
+.harvest-link-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  font-weight: 780;
+}
+
+.harvest-link-row span .icon {
+  color: var(--color-primary-700);
+}
+
+.harvest-finalize-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid #e4d8ad;
+  border-radius: var(--radius-md);
+  background: #fffaf0;
+}
+
+.harvest-finalize-card p {
+  max-width: 590px;
+  margin-top: 3px;
+  color: var(--color-text-soft);
+  font-size: 0.74rem;
+}
+
+.harvest-sales-section,
+.cycle-harvest-section {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.harvest-sales-section__header,
+.cycle-harvest-section__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.harvest-sales-section__header h2,
+.cycle-harvest-section__header h2 {
+  font-size: 1rem;
+}
+
+.harvest-sales-section__header p,
+.cycle-harvest-section__header p {
+  margin-top: 3px;
+  color: var(--color-text-soft);
+  font-size: 0.75rem;
+}
+
+.sale-harvest-info {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-soft);
+}
+
+.sale-harvest-info > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sale-harvest-info span {
+  color: var(--color-text-soft);
+  font-size: 0.7rem;
+}
+
+.sale-harvest-info strong {
+  font-size: 0.75rem;
+}
+
+.sale-total-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 13px;
+  border-radius: 12px;
+  color: #315f4b;
+  background: #eaf4ee;
+}
+
+.sale-total-preview span {
+  font-size: 0.73rem;
+  font-weight: 750;
+}
+
+.sale-total-preview strong {
+  font-size: 1rem;
+}
+
+@media (min-width: 700px) {
+  .harvest-toolbar {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .sale-toolbar {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .harvest-list-summary {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .sale-list-summary {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+  .harvest-list,
+  .sale-list,
+  .cycle-harvest-list {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .harvest-detail-summary {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+  .sale-detail-summary {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .sale-harvest-info {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .sale-harvest-info > div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 620px) {
+  .harvest-list-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .harvest-list-actions
+  .button--primary {
+    margin-left: 0;
+  }
+
+  .harvest-finalize-card,
+  .harvest-sales-section__header,
+  .cycle-harvest-section__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .harvest-finalize-card .button,
+  .harvest-sales-section__header .button,
+  .cycle-harvest-section__header .button {
+    width: 100%;
+  }
+
+  .harvest-detail-hero__top,
+  .sale-detail-hero__top {
+    flex-direction: column;
+  }
+}

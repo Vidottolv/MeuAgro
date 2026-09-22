@@ -1,0 +1,208 @@
+.harvest-summary-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.harvest-summary-card {
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.harvest-summary-card span,
+.harvest-summary-card strong {
+  display: block;
+}
+
+.harvest-summary-card span {
+  color: var(--color-text-soft);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.harvest-summary-card strong {
+  margin-top: 5px;
+  font-size: 1.45rem;
+}
+
+.harvest-summary-card--danger strong {
+  color: var(--color-danger);
+}
+
+.harvest-summary-card--today strong {
+  color: #8d5314;
+}
+
+.harvest-summary-card--week strong {
+  color: var(--color-primary-800);
+}
+
+.harvest-forecast-toolbar {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.harvest-forecast-tabs {
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+  overflow-x: auto;
+}
+
+.harvest-forecast-tabs
+.segmented-control__button {
+  min-width: 82px;
+}
+
+.harvest-forecast-property-filter {
+  margin-bottom: 0;
+}
+
+.harvest-forecast-list {
+  display: grid;
+  gap: 12px;
+}
+
+.harvest-forecast-card {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 8px 22px rgba(37, 56, 44, 0.05);
+}
+
+.harvest-forecast-card__main {
+  display: block;
+  padding: 17px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.harvest-forecast-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.harvest-forecast-card__icon {
+  display: grid;
+  width: 45px;
+  height: 45px;
+  flex: 0 0 45px;
+  place-items: center;
+  border-radius: 14px;
+  color: #8a5911;
+  background: #fff0d7;
+}
+
+.harvest-forecast-card__identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.harvest-forecast-card__identity h3 {
+  overflow: hidden;
+  font-size: 0.98rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.harvest-forecast-card__identity p {
+  overflow: hidden;
+  margin-top: 2px;
+  color: var(--color-text-soft);
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.harvest-forecast-card__status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.harvest-forecast-card__status-row strong {
+  font-size: 0.76rem;
+}
+
+.harvest-forecast-status {
+  display: inline-flex;
+  min-height: 27px;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.harvest-forecast-status--overdue {
+  color: #8d3030;
+  background: #fde7e7;
+}
+
+.harvest-forecast-status--today {
+  color: #7a4711;
+  background: #ffe8cc;
+}
+
+.harvest-forecast-status--harvest_week {
+  color: #5e6818;
+  background: #f1f3d5;
+}
+
+.harvest-forecast-status--upcoming {
+  color: #31557a;
+  background: #e6f0fb;
+}
+
+.harvest-forecast-status--no_forecast {
+  color: #59645f;
+  background: #edf0ee;
+}
+
+.harvest-forecast-card__date {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  color: var(--color-text-soft);
+  font-size: 0.76rem;
+}
+
+.harvest-forecast-card__date .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.harvest-forecast-card__initial {
+  margin-top: 7px;
+  color: var(--color-text-faint);
+  font-size: 0.7rem;
+}
+
+@media (min-width: 720px) {
+  .harvest-summary-grid {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+  .harvest-forecast-toolbar {
+    grid-template-columns:
+      minmax(0, 1.8fr)
+      minmax(220px, 0.8fr);
+    align-items: end;
+  }
+
+  .harvest-forecast-list {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}

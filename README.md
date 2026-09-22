@@ -1,3 +1,9 @@
+# Atualização 0.18.0 — Consultor (etapa 1 de 5)
+
+Leia [CONSULTOR_ETAPA_1.md](CONSULTOR_ETAPA_1.md) para instalar a migração e testar empresas e representantes. Consulte [VALIDACAO_0.18.0.md](VALIDACAO_0.18.0.md) para os resultados.
+
+---
+
 # Meu Agro — Etapa 2
 
 Base inicial do frontend do Meu Agro usando HTML, CSS, JavaScript, Vite e Supabase.
@@ -128,3 +134,4 @@ Serão implementados:
 - permanência da sessão;
 - proteção de rotas;
 - edição inicial do perfil.
+

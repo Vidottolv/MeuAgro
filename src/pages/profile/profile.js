@@ -1,3 +1,4 @@
+import {escapeHtml} from '../../js/html.js';
 import {
   appShell,
 } from '../../components/appShell.js';
@@ -81,12 +82,12 @@ export async function renderProfilePage({
       content: `
         <section class="profile-summary">
           <div class="profile-summary__avatar">
-            ${initials(name)}
+            ${escapeHtml(initials(name))}
           </div>
 
           <div class="profile-summary__content">
-            <strong>${name}</strong>
-            <span>${session?.user?.email || '-'}</span>
+            <strong>${escapeHtml(name)}</strong>
+            <span>${escapeHtml(session?.user?.email || '-')}</span>
           </div>
         </section>
 
@@ -94,23 +95,6 @@ export async function renderProfilePage({
           <p class="more-list__label">
             Conta
           </p>
-
-          <div class="more-item">
-            <span class="more-item__icon">
-              ${icon('user')}
-            </span>
-
-            <span class="more-item__content">
-              <strong>Perfil do banco</strong>
-              <span>
-                ${
-                  profile
-                    ? 'Sincronizado com public.profiles'
-                    : 'Perfil não encontrado'
-                }
-              </span>
-            </span>
-          </div>
 
           <button
             id="logout-button"

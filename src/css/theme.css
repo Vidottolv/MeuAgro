@@ -763,3 +763,23 @@ input:-webkit-autofill:focus {
   color: #e2bf78;
   background: #40351e;
 }
+
+/* Pesquisas compostas: uma superfície contínua para ícone e texto. */
+:root[data-theme="dark"] .crop-search,
+:root[data-theme="dark"] .crop-search input[type] {
+  background: var(--theme-control-background);
+}
+:root[data-theme="dark"] .crop-search input[type] {
+  box-shadow: none;
+}
+:root[data-theme="dark"] .crop-search input::placeholder {
+  color: var(--color-text-soft);
+}
+.crop-search:focus-within {
+  outline: 2px solid var(--color-primary-700);
+  outline-offset: 2px;
+}
+:root[data-theme="dark"] .input-info-note strong,
+:root[data-theme="dark"] .input-info-note > .icon {
+  color: #a8d8b5;
+}

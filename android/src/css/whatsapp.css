@@ -1,0 +1,95 @@
+.button--whatsapp {
+  border-color: #1f9d55;
+  color: #fff;
+  background: #1f9d55;
+}
+
+.button--whatsapp:hover {
+  background: #188348;
+}
+
+.button--disabled {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.restock-modal {
+  max-width: 470px;
+}
+
+.restock-modal__icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  color: #8d4c13;
+  background: #fff0d7;
+}
+
+.restock-modal strong {
+  color: var(--color-text);
+}
+
+.restock-modal__empty {
+  margin-top: 16px;
+  padding: 13px;
+  border-radius: 13px;
+  background: var(--color-surface-soft);
+}
+
+.restock-consultant-option {
+  display: grid;
+  gap: 3px;
+  margin: 16px 0 12px;
+  padding: 13px;
+  border: 1px solid var(--color-border);
+  border-radius: 13px;
+  background: var(--color-surface-soft);
+}
+
+.restock-consultant-option span {
+  color: var(--color-text-soft);
+  font-size: 0.76rem;
+}
+
+.stock-restock-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #f0ccb1;
+  border-radius: var(--radius-md);
+  background: #fff7ef;
+}
+
+.stock-restock-alert__content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.stock-restock-alert__content .icon {
+  flex: 0 0 auto;
+  color: #9a5518;
+}
+
+.stock-restock-alert p {
+  margin-top: 3px;
+  color: var(--color-text-soft);
+  font-size: 0.76rem;
+}
+
+@media (max-width: 560px) {
+  .stock-restock-alert {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .stock-restock-alert .button {
+    width: 100%;
+  }
+}
