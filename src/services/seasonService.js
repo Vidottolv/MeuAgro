@@ -54,6 +54,7 @@ function normalizePayload(data) {
   };
 }
 
+/** @param {{propertyId?: string | null, status?: string | null, archived?: boolean}} [options] */
 export async function listSeasons({
   propertyId = null,
   status = null,
@@ -310,6 +311,7 @@ export async function restoreSeason(id) {
   return data;
 }
 
+/** @param {string | null} [propertyId] */
 export async function countOpenSeasons(
   propertyId = null,
 ) {

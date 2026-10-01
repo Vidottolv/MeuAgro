@@ -1,3 +1,4 @@
+import {showToast,clearTradeToast} from '../components/toast.js';
 import {supabase} from '../js/supabase.js';
 
 let userId=null,generation=0,timer=null,pending=false,loaded=false;
@@ -5,18 +6,9 @@ let inbox={items:[],unread_count:0},lastError='';
 export const tradeUnreadCount=()=>inbox.unread_count;
 export const tradeInbox=()=>({...inbox,error:lastError,loaded});
 function paintCount(){
- for(const el of document.querySelectorAll('[data-trade-unread]')){el.textContent=inbox.unread_count>99?'99+':inbox.unread_count?String(inbox.unread_count):'';el.closest('.trade-bell')?.setAttribute('aria-label','Avisos de compras'+(inbox.unread_count?', '+inbox.unread_count+' não lidos':''));}
  document.dispatchEvent(new CustomEvent('trade-notifications-updated'));
 }
-function toast(title){
- document.querySelector('#trade-toast')?.remove();
- const el=document.createElement('aside');el.id='trade-toast';el.className='trade-toast';el.setAttribute('role','status');
- const close=document.createElement('button');close.type='button';close.textContent='×';close.setAttribute('aria-label','Fechar aviso');close.onclick=()=>el.remove();
- const text=document.createElement('p');text.textContent=title;
- const link=document.createElement('a');link.href='/notificacoes/compras';link.dataset.link='';link.className='button button--secondary';link.textContent='Ver avisos';link.onclick=()=>el.remove();
- el.append(close,text,link);document.body.append(el);
- window.setTimeout(()=>el.remove(),12000);
-}
+function toast(title){showToast(title,{duration:12000,trade:true});}
 export async function refreshTradeNotifications(){
  if(!supabase||!userId||pending)return;
  const current=generation;pending=true;
@@ -38,7 +30,7 @@ export function setTradeNotificationSession(session){
  const next=session?.user?.id||null;
  if(next===userId)return;
  userId=next;generation++;pending=false;loaded=false;lastError='';inbox={items:[],unread_count:0};
- clearInterval(timer);timer=null;document.querySelector('#trade-toast')?.remove();paintCount();
+ clearInterval(timer);timer=null;clearTradeToast();paintCount();
  if(userId){void refreshTradeNotifications();timer=setInterval(()=>{if(!document.hidden)void refreshTradeNotifications();},15000);}
 }
 export async function readTradeNotification(id){

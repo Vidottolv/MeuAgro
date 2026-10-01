@@ -105,6 +105,7 @@ export function enrichHarvestForecastCycle(
   };
 }
 
+/** @param {{propertyId?: string | null, filter?: string}} [options] */
 export async function listHarvestForecastCycles({
   propertyId = null,
   filter = 'all',

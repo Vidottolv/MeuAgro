@@ -1,0 +1,1 @@
+const a=[["own_consumption","Consumo próprio"],["sale","Venda"],["own_consumption_and_sale","Consumo próprio e venda"],["donation","Doação"],["loss","Perda"],["other","Outro"]];function e(o){var n;return((n=a.find(([s])=>s===o))==null?void 0:n[1])||o||"Não informado"}function r(o){return["sale","own_consumption_and_sale"].includes(o)}export{a as H,e as g,r as h};

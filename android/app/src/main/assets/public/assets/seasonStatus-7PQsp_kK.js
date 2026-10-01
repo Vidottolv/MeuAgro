@@ -1,0 +1,1 @@
+const d=[["planned","Planejada"],["active","Em andamento"],["closed","Encerrada"],["cancelled","Cancelada"]];function o(a){var n;return((n=d.find(([e])=>e===a))==null?void 0:n[1])||a||"Não informado"}export{d as S,o as g};

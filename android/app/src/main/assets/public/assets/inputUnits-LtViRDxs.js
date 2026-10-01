@@ -1,0 +1,1 @@
+const i=[["kg","Quilograma (kg)"],["g","Grama (g)"],["l","Litro (L)"],["ml","Mililitro (mL)"],["unit","Unidade"],["bag","Saco"],["box","Caixa"],["bottle","Frasco"],["package","Pacote"],["seed","Semente"],["seedling","Muda"],["other","Outra unidade"]];function n(a){var e;return((e=i.find(([t])=>t===a))==null?void 0:e[1])||a||""}export{i as I,n as g};

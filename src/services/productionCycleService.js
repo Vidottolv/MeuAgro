@@ -104,6 +104,7 @@ function normalizePayload(data) {
   };
 }
 
+/** @param {{propertyId?: string | null, areaId?: string | null, seasonId?: string | null, cropId?: string | null, status?: string | null, openOnly?: boolean, archived?: boolean, limit?: number | null}} [options] */
 export async function listProductionCycles({
   propertyId = null,
   areaId = null,

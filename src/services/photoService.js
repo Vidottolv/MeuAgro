@@ -219,6 +219,7 @@ export async function removePhotoFile(
   }
 }
 
+/** @param {{cycle: {id: string, property_id: string, area_id: string}, eventId?: string | null, storagePath: string, description: string, capturedAt: string | null}} options */
 export async function createPhotoRecord({
   cycle,
   eventId = null,

@@ -145,6 +145,8 @@ export async function createAreaType({
   return data;
 }
 
+/** @param {string} propertyId
+ * @param {{archived?: boolean, limit?: number | null}} [options] */
 export async function listAreasByProperty(
   propertyId,
   {
@@ -209,6 +211,7 @@ export async function listAreasByProperty(
   return data ?? [];
 }
 
+/** @param {string | null} [propertyId] */
 export async function countActiveAreas(
   propertyId = null,
 ) {

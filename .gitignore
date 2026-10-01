@@ -16,3 +16,5 @@ android/build/
 *.keystore
 
 validation-artifacts/
+
+validation/results/

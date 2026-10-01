@@ -111,6 +111,7 @@ function withBalance(lot, balance) {
   };
 }
 
+/** @param {{ inputId?: string | null, includeEmpty?: boolean, limit?: number | null }} [options] */
 export async function listInventoryLots({
   inputId = null,
   includeEmpty = true,

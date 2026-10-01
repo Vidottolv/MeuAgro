@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import ts from 'typescript';
+const source=new URL('../src/modules/inventory/inputFormModel.ts',import.meta.url);
+let js=ts.transpileModule(await readFile(source,'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+js=js.replace(/from (['"])(\.\.\/\.\.\/constants\/[^'"]+)\1/g,(_,quote,path)=>`from '${new URL(path,source).href}'`);
+const {createInputDraft,parseStock,validateInputDraft,inputPayload}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+const valid=()=>({...createInputDraft(),name:'Adubo',category:'manures',baseUnit:'kg'});
+for(const [text,expected] of [['',null],['  ',null],['0',0],['2,5',2.5],['2.5',2.5],['.5',.5],[' 10 ',10]])test('Decimal '+JSON.stringify(text),()=>assert.equal(parseStock(text),expected));
+for(const text of ['-1','abc','NaN','Infinity','1.234,56','1,2,3','1e3'])test('Número inválido '+text,()=>assert.ok(Number.isNaN(parseStock(text))));
+test('Obrigatórios e categorias/unidades desconhecidas',()=>{assert.deepEqual(Object.keys(validateInputDraft(createInputDraft())),['name','category','baseUnit']);const d=valid();d.category='wrong';d.baseUnit='wrong';assert.deepEqual(Object.keys(validateInputDraft(d)),['category','baseUnit']);});
+test('Limites de estoque e comparação decimal',()=>{const d=valid();d.minimumStock='2,5';d.idealStock='2.4';assert.ok(validateInputDraft(d).idealStock);d.idealStock='2.5';assert.deepEqual(validateInputDraft(d),{});});
+test('Mínimo vazio vira zero e ideal vazio fica opcional',()=>{const d=valid();d.minimumStock='';d.idealStock='';assert.equal(inputPayload(d).minimumStock,0);assert.equal(inputPayload(d).idealStock,'');assert.deepEqual(validateInputDraft(d),{});});
+test('Ideal zero não é confundido com vazio',()=>{const d=valid();d.idealStock='0';assert.equal(inputPayload(d).idealStock,0);assert.deepEqual(validateInputDraft(d),{});});
+test('Limites de tamanho',()=>{const d=valid();Object.assign(d,{name:'x'.repeat(161),brand:'x'.repeat(161),description:'x'.repeat(1201),notes:'x'.repeat(1601)});assert.deepEqual(Object.keys(validateInputDraft(d)),['name','brand','description','notes']);});
+test('Payload não modifica saldo, dono ou status do insumo',()=>{const d=valid();d.name='  Adubo  ';d.minimumStock='1,25';assert.deepEqual(inputPayload(d),{name:'Adubo',brand:'',category:'manures',baseUnit:'kg',minimumStock:1.25,idealStock:'',description:'',notes:''});});
+test('Edição preserva valores zero e textos recebidos',()=>{const draft=createInputDraft({id:'a',name:'<script>',brand:null,category:'seeds',base_unit:'kg',minimum_stock:'0.0000',ideal_stock:0,description:'descrição',notes:'obs'});assert.equal(draft.name,'<script>');assert.equal(draft.brand,'');assert.equal(draft.idealStock,'0');assert.equal(inputPayload(draft).minimumStock,0);assert.equal(draft.notes,'obs');});

@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import ts from 'typescript';
+const source=await readFile(new URL('../src/modules/inventory/detailModel.ts',import.meta.url),'utf8');
+const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const {needsRestock,lotStatus,todayLocal,stockStatusLabel}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+for(const [active,quantity,count,expected] of [[true,0,1,true],[true,'0.0000',1,true],[true,-1,1,true],[true,0,0,false],[true,1,1,false],[false,0,1,false],[true,'invalid',1,false]])test(`Reposição: ${active}/${quantity}/${count}`,()=>assert.equal(needsRestock({active,current_quantity:quantity},count),expected));
+test('Sem produto não sugere reposição',()=>assert.equal(needsRestock(null,2),false));
+for(const [quantity,date,expected] of [[0,'2020-01-01','Sem saldo'],['2','2026-09-21','Vencido'],[2,'2026-09-22','Disponível'],[2,'2026-09-23','Disponível'],[2,null,'Disponível']])test(`Lote ${quantity}/${date}`,()=>assert.equal(lotStatus({current_quantity:quantity,expiration_date:date},'2026-09-22'),expected));
+test('Data local sem conversão UTC',()=>assert.equal(todayLocal(new Date(2026,8,22,23,59)),'2026-09-22'));
+test('Rótulos de saldo e fallback',()=>{assert.equal(stockStatusLabel('low_stock'),'Estoque baixo');assert.equal(stockStatusLabel('normal'),'Estoque normal');assert.equal(stockStatusLabel('out_of_stock'),'Sem estoque');assert.equal(stockStatusLabel('unknown'),'Situação não informada');});

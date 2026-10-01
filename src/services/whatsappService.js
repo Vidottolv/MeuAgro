@@ -77,6 +77,10 @@ export function buildGeneralConsultantMessage({
   );
 }
 
+/**
+ * @param {{ name: string, whatsapp: string } | null | undefined} consultant
+ * @param {{ productName?: string | null }} [options]
+ */
 export function buildConsultantWhatsAppUrl(
   consultant,
   {

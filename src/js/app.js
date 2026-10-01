@@ -1,3 +1,5 @@
+import {createApp} from 'vue';
+import ToastHost from '../modules/shared/ToastHost.vue';
 import { supabase } from './supabase.js';
 import {hasAuthCallback} from '../services/authCallbackService.js';
 import {completeAuthCallback} from '../services/authCallbackRouter.js';
@@ -28,6 +30,7 @@ import {
 } from '../services/nativeRuntimeService.js';
 
 initializeTheme();
+createApp(ToastHost).mount('#toast-container');
 
 onAuthStateChange((event) => {
   window.setTimeout(() => {

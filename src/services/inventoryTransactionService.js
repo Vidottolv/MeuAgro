@@ -83,6 +83,7 @@ function manualTypes() {
   );
 }
 
+/** @param {{ inputId?: string | null, lotId?: string | null, type?: string | null, limit?: number | null }} [options] */
 export async function listInventoryTransactions({
   inputId = null,
   lotId = null,

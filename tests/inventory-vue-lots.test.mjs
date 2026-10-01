@@ -1,0 +1,16 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import ts from 'typescript';
+const source = await readFile(new URL('../src/modules/inventory/lots/lotModel.ts', import.meta.url), 'utf8');
+const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
+const { decimal, validDate, validateLot, metadata, purchase } = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64'));
+const fields = { purchasedQuantity: '1,2345', totalPrice: '12,50', purchaseDate: '2026-09-23', expirationDate: '', supplier: ' Agro ', batchNumber: ' A ', notes: ' Teste ' };
+for (const [value, expected] of [['1,2345',1.2345],['0',0],['',null],['abc',null],['-1',null],['Infinity',null],['1.000,50',null]]) test(`Decimal ${value}`, () => assert.equal(decimal(value), expected));
+for (const [value, expected] of [['2024-02-29',true],['2026-02-29',false],['2026-13-01',false],['',false]]) test(`Data ${value}`, () => assert.equal(validDate(value),expected));
+test('Compra válida com vírgula e opcionais', () => {assert.equal(validateLot(fields,null),'');assert.equal(purchase(fields).purchasedQuantity,1.2345);assert.equal(purchase(fields).totalPrice,12.5);});
+for (const change of [{purchasedQuantity:'0'},{purchasedQuantity:'0.00001'},{totalPrice:'abc'},{totalPrice:'-1'},{totalPrice:'1.001'},{purchaseDate:''},{expirationDate:'2026-09-01'},{expirationDate:'2026-02-30'},{supplier:'x'.repeat(181)},{batchNumber:'x'.repeat(121)},{notes:'x'.repeat(1501)}]) test(`Rejeita ${Object.keys(change)[0]}: ${String(Object.values(change)[0]).slice(0,20)}`, () => assert.ok(validateLot({...fields,...change},null)));
+test('Custo ausente distinto de zero',()=>{assert.equal(purchase({...fields,totalPrice:''}).totalPrice,null);assert.equal(purchase({...fields,totalPrice:'0'}).totalPrice,0);});
+test('Edição envia somente identificação',()=>assert.deepEqual(metadata(fields),{supplier:'Agro',batchNumber:'A',expirationDate:'',notes:'Teste'}));
+test('Edição usa data original protegida',()=>assert.ok(validateLot({...fields,purchaseDate:'2000-01-01',expirationDate:'2020-01-01'},{purchase_date:'2026-09-23'})));
+test('Edição ignora quantidade e preço adulterados',()=>assert.equal(validateLot({...fields,purchasedQuantity:'bad',totalPrice:'bad',purchaseDate:''},{purchase_date:'2026-09-23'}),''));

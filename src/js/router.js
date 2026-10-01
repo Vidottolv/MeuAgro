@@ -1,210 +1,156 @@
+import {scrollToRouteAnchor} from '../modules/shared/routeAnchor.js';
 import {setPushSession} from '../services/tradePushService.js';
-import {renderManagement, renderManagementWorkspace} from '../pages/commerce/management.js';
-import { renderSalesResults } from '../pages/commerce/results.js';
+const renderManagement = async c => (await import('../modules/commerce/mount.js')).renderManagement(c);
+const renderManagementWorkspace = async c => (await import('../modules/commerce/mount.js')).renderManagementWorkspace(c);
+const renderSalesResults = async c => (await import('../modules/commerce/mount.js')).renderSalesResults(c);
 import { setTradeNotificationSession } from '../services/tradeNotificationService.js';
-import { renderTradeNotifications } from '../pages/commerce/notifications.js';
-import { renderTradePage } from '../pages/commerce/trade.js';
-import { renderCommercePage } from '../pages/commerce/commerce.js';
+const renderTradeNotifications = async c => (await import('../modules/account/mount.js')).renderTradeNotifications(c);
+const renderTradePage = async c => (await import('../modules/commerce/mount.js')).renderTradePage(c);
+const renderCommercePage = async c => (await import('../modules/commerce/mount.js')).renderCommercePage(c);
 import {
   getSession,
 } from '../services/authService.js';
 
-import {
-  renderLoginPage,
-} from '../pages/login/login.js';
+const renderLoginPage = async c => (await import('../modules/account/mount.js')).renderLoginPage(c);
 
-import {
-  renderRegisterPage,
-} from '../pages/register/register.js';
+const renderRegisterPage = async c => (await import('../modules/account/mount.js')).renderRegisterPage(c);
 
-import {
-  renderForgotPasswordPage,
-} from '../pages/forgot-password/forgot-password.js';
+const renderForgotPasswordPage = async c => (await import('../modules/account/mount.js')).renderForgotPasswordPage(c);
 
-import {
-  renderResetPasswordPage,
-} from '../pages/reset-password/reset-password.js';
+const renderResetPasswordPage = async c => (await import('../modules/account/mount.js')).renderResetPasswordPage(c);
 
-import {
-  renderDashboardPage,
-} from '../pages/dashboard/dashboard.js';
+const renderDashboardPage = async c => (await import('../modules/account/mount.js')).renderDashboardPage(c);
 
-import {
-  renderPropertiesPage,
-} from '../pages/properties/properties.js';
+async function renderPropertiesPage(context) {
+  const { renderPropertiesVue } = await import('../modules/properties/mount.js');
+  return renderPropertiesVue(context);
+}
 
-import {
-  renderPropertyFormPage,
-} from '../pages/properties/propertyForm.js';
+async function renderPropertyFormPage(context) {
+  const { renderPropertyFormVue } = await import('../modules/properties/mount.js');
+  return renderPropertyFormVue(context);
+}
 
-import {
-  renderPropertyDetailPage,
-} from '../pages/properties/propertyDetail.js';
+async function renderPropertyDetailPage(context) {
+  const { renderPropertyDetailVue } = await import('../modules/properties/mount.js');
+  return renderPropertyDetailVue(context);
+}
 
-import {
-  renderAreasPage,
-} from '../pages/areas/areas.js';
+async function renderAreasPage(context) {
+  const { renderAreasVue } = await import('../modules/properties/mount.js');
+  return renderAreasVue(context);
+}
 
-import {
-  renderAreaFormPage,
-} from '../pages/areas/areaForm.js';
+async function renderAreaFormPage(context) {
+  const { renderAreaFormVue } = await import('../modules/properties/mount.js');
+  return renderAreaFormVue(context);
+}
 
-import {
-  renderAreaDetailPage,
-} from '../pages/areas/areaDetail.js';
+async function renderAreaDetailPage(context) {
+  const { renderAreaDetailVue } = await import('../modules/properties/mount.js');
+  return renderAreaDetailVue(context);
+}
 
-import {
-  renderPlantingsPage,
-} from '../pages/plantings/plantings.js';
-
-import {
-  renderInventoryPage,
-} from '../pages/inventory/inventory.js';
-
-import {
-  renderMorePage,
-} from '../pages/more/more.js';
-
-import {
-  renderFeaturePlaceholder,
-} from '../pages/more/featurePlaceholder.js';
-
-import {
-  renderProfilePage,
-} from '../pages/profile/profile.js';
-
-import {
-  renderSeasonsPage,
-} from '../pages/seasons/seasons.js';
-
-import {
-  renderSeasonFormPage,
-} from '../pages/seasons/seasonForm.js';
-
-import {
-  renderSeasonDetailPage,
-} from '../pages/seasons/seasonDetail.js';
-
-import {
-  renderCropsPage,
-} from '../pages/crops/crops.js';
-
-import {
-  renderCropFormPage,
-} from '../pages/crops/cropForm.js';
-
-import {
-  renderCropDetailPage,
-} from '../pages/crops/cropDetail.js';
-
-import {
-  renderProductionCycleFormPage,
-} from '../pages/plantings/productionCycleForm.js';
-
-import {
-  renderProductionCycleDetailPage,
-} from '../pages/plantings/productionCycleDetail.js';
-
-import {
-  renderProductionEventFormPage,
-} from '../pages/plantings/productionEventForm.js';
-
-import {
-  renderEvolutionPage,
-} from '../pages/plantings/evolution.js';
-
-import {
-  renderEvolutionPhotoFormPage,
-} from '../pages/plantings/evolutionPhotoForm.js';
-
-import {
-  renderEventInputFormPage,
-} from '../pages/plantings/eventInputForm.js';
-
-import {
-  renderInputFormPage,
-} from '../pages/inventory/inputForm.js';
-
-import {
-  renderInputDetailPage,
-} from '../pages/inventory/inputDetail.js';
+const renderPlantingsPage = async (context) => (await import('../modules/plantings/mount.js')).renderPlantingsVue(context);
 
 
-import {
-  renderInventoryLotsPage,
-} from '../pages/inventory/lots.js';
 
-import {
-  renderInventoryLotFormPage,
-} from '../pages/inventory/lotForm.js';
+const renderMorePage = async c => (await import('../modules/account/mount.js')).renderMorePage(c);
 
-import {
-  renderInventoryLotDetailPage,
-} from '../pages/inventory/lotDetail.js';
 
-import {
-  renderInventoryTransactionsPage,
-} from '../pages/inventory/inventoryTransactions.js';
 
-import {
-  renderInventoryTransactionFormPage,
-} from '../pages/inventory/inventoryTransactionForm.js';
+const renderProfilePage = async c => (await import('../modules/account/mount.js')).renderProfilePage(c);
 
-import {
-  renderInventoryTransactionDetailPage,
-} from '../pages/inventory/inventoryTransactionDetail.js';
+const renderSeasonsPage = async (context) => (await import('../modules/seasons/mount.js')).renderSeasonsVue(context);
 
-import {
-  renderConsultantsPage,
-} from '../pages/consultants/consultants.js';
+const renderSeasonFormPage = async (context) => (await import('../modules/seasons/mount.js')).renderSeasonFormVue(context);
 
-import {
-  renderConsultantFormPage,
-} from '../pages/consultants/consultantForm.js';
+const renderSeasonDetailPage = async (context) => (await import('../modules/seasons/mount.js')).renderSeasonDetailVue(context);
 
-import {
-  renderConsultantDetailPage,
-} from '../pages/consultants/consultantDetail.js';
+const renderCropsPage = async (context) => (await import('../modules/production/mount.js')).renderCropsVue(context);
 
-import {
-  renderHarvestForecastPage,
-} from '../pages/harvest-forecast/harvestForecast.js';
+const renderCropFormPage = async (context) => (await import('../modules/production/mount.js')).renderCropFormVue(context);
 
-import {
-  renderSettingsPage,
-} from '../pages/settings/settings.js';
+const renderCropDetailPage = async (context) => (await import('../modules/production/mount.js')).renderCropDetailVue(context);
 
-import {
-  renderHarvestsPage,
-} from '../pages/harvests/harvests.js';
+const renderProductionCycleFormPage = async (context) => (await import('../modules/plantings/mount.js')).renderPlantingFormVue(context);
 
-import {
-  renderHarvestFormPage,
-} from '../pages/harvests/harvestForm.js';
+const renderProductionCycleDetailPage = async (context) => (await import('../modules/plantings/mount.js')).renderPlantingDetailVue(context);
 
-import {
-  renderHarvestDetailPage,
-} from '../pages/harvests/harvestDetail.js';
+const renderProductionEventFormPage = async (context) => (await import('../modules/production/mount.js')).renderEventFormVue(context);
 
-import {
-  renderSalesPage,
-} from '../pages/sales/sales.js';
+const renderEvolutionPage = async (context) => (await import('../modules/production/mount.js')).renderGalleryVue(context);
 
-import {
-  renderSaleFormPage,
-} from '../pages/sales/saleForm.js';
+const renderEvolutionPhotoFormPage = async (context) => (await import('../modules/production/mount.js')).renderPhotoFormVue(context);
 
-import {
-  renderSaleDetailPage,
-} from '../pages/sales/saleDetail.js';
+const renderEventInputFormPage = async (context) => (await import('../modules/production/mount.js')).renderUsageVue(context);
 
-import {
-  renderFinancePage,
-} from '../pages/finance/finance.js';
+async function renderInputFormPage(context) {
+  const { renderInputFormVue } = await import('../modules/inventory/mount.js');
+  return renderInputFormVue(context);
+}
 
-import {
-  renderCycleFinanceDetailPage,
-} from '../pages/finance/cycleFinanceDetail.js';
+async function renderInputDetailPage(context) {
+  const { renderInputDetailVue } = await import('../modules/inventory/mount.js');
+  return renderInputDetailVue(context);
+}
+
+
+async function renderInventoryLotsPage(context) {
+  const { renderLotsVue } = await import('../modules/inventory/mount.js');
+  return renderLotsVue(context);
+}
+
+async function renderInventoryLotFormPage(context) {
+  const { renderLotFormVue } = await import('../modules/inventory/mount.js');
+  return renderLotFormVue(context);
+}
+
+async function renderInventoryLotDetailPage(context) {
+  const { renderLotDetailVue } = await import('../modules/inventory/mount.js');
+  return renderLotDetailVue(context);
+}
+
+async function renderInventoryTransactionsPage(context) {
+  const { renderTransactionsVue } = await import('../modules/inventory/mount.js');
+  return renderTransactionsVue(context);
+}
+
+async function renderInventoryTransactionFormPage(context) {
+  const { renderTransactionFormVue } = await import('../modules/inventory/mount.js');
+  return renderTransactionFormVue(context);
+}
+
+async function renderInventoryTransactionDetailPage(context) {
+  const { renderTransactionDetailVue } = await import('../modules/inventory/mount.js');
+  return renderTransactionDetailVue(context);
+}
+
+const renderConsultantsPage = async c => (await import('../modules/contacts/mount.js')).renderConsultantsPage(c);
+
+const renderConsultantFormPage = async c => (await import('../modules/contacts/mount.js')).renderConsultantFormPage(c);
+
+const renderConsultantDetailPage = async c => (await import('../modules/contacts/mount.js')).renderConsultantDetailPage(c);
+
+const renderHarvestForecastPage = async (context) => (await import('../modules/production/mount.js')).renderForecastVue(context);
+
+const renderSettingsPage = async c => (await import('../modules/account/mount.js')).renderSettingsPage(c);
+
+const renderHarvestsPage = async c => (await import('../modules/harvests/mount.js')).renderHarvestsPage(c);
+
+const renderHarvestFormPage = async c => (await import('../modules/harvests/mount.js')).renderHarvestFormPage(c);
+
+const renderHarvestDetailPage = async c => (await import('../modules/harvests/mount.js')).renderHarvestDetailPage(c);
+
+const renderSalesPage = async c => (await import('../modules/harvests/mount.js')).renderSalesPage(c);
+
+const renderSaleFormPage = async c => (await import('../modules/harvests/mount.js')).renderSaleFormPage(c);
+
+const renderSaleDetailPage = async c => (await import('../modules/harvests/mount.js')).renderSaleDetailPage(c);
+
+const renderFinancePage = async c => (await import('../modules/harvests/mount.js')).renderFinancePage(c);
+
+const renderCycleFinanceDetailPage = async c => (await import('../modules/harvests/mount.js')).renderCycleFinanceDetailPage(c);
 
 const privateRoute = (render) => ({
   render,
@@ -274,10 +220,11 @@ const routes = {
         }),
     ),
 
-  '/inventory':
-    privateRoute(
-      renderInventoryPage,
-    ),
+  '/inventory': privateRoute(async context => {
+    const { renderInventoryVue } = await import('../modules/inventory/mount.js');
+    return renderInventoryVue(context);
+  }),
+  '/inventory/classic': privateRoute(async () => navigate('/inventory', {replace:true})),
 
   '/inventory/new':
     privateRoute(
@@ -933,40 +880,10 @@ function findRoute(path) {
   return null;
 }
 
-function renderNotFound() {
-  const app =
-    document.querySelector('#app');
-
-  app.innerHTML = `
-    <main class="auth-layout">
-      <section class="auth-panel--message">
-        <p class="brand__eyebrow">
-          Meu Agro
-        </p>
-
-        <h1>
-          Página não encontrada
-        </h1>
-
-        <p
-          style="
-            margin: 16px 0;
-            color: var(--color-text-soft);
-          "
-        >
-          O endereço informado não existe.
-        </p>
-
-        <a
-          href="/"
-          class="button button--primary button--full"
-          data-link
-        >
-          Voltar ao início
-        </a>
-      </section>
-    </main>
-  `;
+async function renderNotFound() {
+ const {createApp}=await import('vue');
+ const {default:Page}=await import('../modules/shared/NotFoundPage.vue');
+ const app=createApp(Page);app.mount('#app');cleanupCurrentPage=()=>app.unmount();
 }
 
 export async function renderRoute() {
@@ -1020,7 +937,7 @@ export async function renderRoute() {
       findRoute(path);
 
     if (!matched) {
-      renderNotFound();
+      await renderNotFound();
       return;
     }
 
@@ -1072,34 +989,9 @@ export async function renderRoute() {
         cleanup;
     }
 
-    const hash =
-      window.location.hash;
-
-    if (hash) {
-      const target =
-        document.getElementById(
-          decodeURIComponent(
-            hash.slice(1),
-          ),
-        );
-
-      if (target) {
-        target.scrollIntoView({
-          block: 'start',
-          behavior: 'instant',
-        });
-      } else {
-        window.scrollTo({
-          top: 0,
-          behavior: 'instant',
-        });
-      }
-    } else {
-      window.scrollTo({
-        top: 0,
-        behavior: 'instant',
-      });
-    }
+    const stopAnchor = scrollToRouteAnchor(window.location.hash);
+    const disposePage = cleanupCurrentPage;
+    cleanupCurrentPage = () => { stopAnchor(); disposePage?.(); };
   } finally {
     rendering = false;
 

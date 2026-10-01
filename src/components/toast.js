@@ -1,41 +1,6 @@
-const DEFAULT_DURATION = 3500;
-
-export function showToast(
-  message,
-  {
-    type = 'default',
-    duration = DEFAULT_DURATION,
-  } = {},
-) {
-  const container =
-    document.querySelector(
-      '#toast-container',
-    );
-
-  if (!container) return;
-
-  const toast =
-    document.createElement('div');
-
-  toast.className =
-    `toast${
-      type === 'error'
-        ? ' toast--error'
-        : type === 'success'
-          ? ' toast--success'
-          : ''
-    }`;
-
-  toast.setAttribute(
-    'role',
-    'status',
-  );
-
-  toast.textContent = message;
-
-  container.appendChild(toast);
-
-  window.setTimeout(() => {
-    toast.remove();
-  }, duration);
-}
+import {shallowRef} from 'vue';
+export const toastItems=shallowRef([]);
+let sequence=0;
+export function dismissToast(id){toastItems.value=toastItems.value.filter(t=>t.id!==id)}
+export function clearTradeToast(){toastItems.value=toastItems.value.filter(t=>!t.trade)}
+export function showToast(message,{type='default',duration=3500,trade=false}={}){if(trade)clearTradeToast();const id=++sequence;toastItems.value=[...toastItems.value,{id,message,type,trade}];window.setTimeout(()=>dismissToast(id),duration);}

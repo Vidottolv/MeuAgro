@@ -1,11 +1,11 @@
 {
   "name": "meu-agro",
   "private": true,
-  "version": "0.26.0",
+  "version": "0.35.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "android:setup": "node scripts/android-setup.mjs",
     "android:sync": "npm run build && npx cap sync android && node scripts/android-apply-config.mjs",
@@ -16,13 +16,25 @@
     "android:aab": "npm run android:sync && node scripts/android-gradle.mjs bundleRelease",
     "test:auth": "node --test tests/auth.test.mjs tests/oauth.test.mjs",
     "test:commerce": "node --test tests/commerce-database.test.mjs",
-    "test": "npm run test:auth && npm run test:commerce && npm run test:trade && npm run test:orders && npm run test:delivery && npm run test:sales && npm run test:improvements && npm run test:management",
+    "test": "npm run test:auth && npm run test:commerce && npm run test:trade && npm run test:orders && npm run test:delivery && npm run test:sales && npm run test:improvements && npm run test:management && npm run test:inventory-vue && npm run test:properties-vue && npm run test:seasons-vue && npm run test:plantings-vue && npm run test:production-vue && npm run test:v035",
     "test:trade": "node --test tests/trade-database.test.mjs",
     "test:orders": "node --test tests/orders-database.test.mjs",
     "test:delivery": "node --test tests/delivery-database.test.mjs",
     "test:sales": "node --test tests/sales-database.test.mjs",
     "test:improvements": "node --test tests/improvements.test.mjs tests/push-dispatch.test.mjs tests/push-client.test.mjs",
-    "test:management": "node --test tests/management.test.mjs tests/management-edge.test.mjs"
+    "test:management": "node --test tests/management.test.mjs tests/management-edge.test.mjs",
+    "typecheck": "vue-tsc --noEmit",
+    "format:inventory": "prettier --write \"src/modules/inventory/**/*.{vue,ts,js,css}\"",
+    "test:inventory-vue": "node --test tests/inventory-vue-form.test.mjs tests/inventory-vue-detail.test.mjs tests/inventory-vue-lots.test.mjs tests/inventory-vue-transactions.test.mjs",
+    "test:properties-vue": "node --test tests/properties-vue.test.mjs",
+    "format:properties": "prettier --write \"src/modules/properties/**/*.{vue,ts,js,css}\"",
+    "test:seasons-vue": "node --test tests/seasons-vue.test.mjs",
+    "format:seasons": "prettier --write \"src/modules/seasons/**/*.{vue,ts,js,css}\"",
+    "test:plantings-vue": "node --test tests/plantings-vue.test.mjs",
+    "format:plantings": "prettier --write \"src/modules/plantings/**/*.{vue,ts,js,css}\"",
+    "test:production-vue": "node --test tests/production-vue.test.mjs",
+    "format:production": "prettier --write \"src/modules/production/**/*.{vue,ts,js,css}\"",
+    "test:v035": "node --test tests/v035-workflows.test.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.1",
@@ -33,12 +45,17 @@
     "@capacitor/local-notifications": "8.3.1",
     "@capacitor/push-notifications": "8.1.2",
     "@capacitor/splash-screen": "8.0.2",
-    "@supabase/supabase-js": "2.116.0"
+    "@supabase/supabase-js": "2.116.0",
+    "vue": "3.5.43"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.1",
     "@electric-sql/pglite": "0.5.8",
-    "vite": "6.4.3"
+    "@vitejs/plugin-vue": "5.2.4",
+    "prettier": "3.9.8",
+    "typescript": "5.9.3",
+    "vite": "6.4.3",
+    "vue-tsc": "3.3.11"
   },
   "engines": {
     "node": ">=22.0.0"

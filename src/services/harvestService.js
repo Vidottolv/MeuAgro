@@ -245,6 +245,7 @@ export function getHarvestSalesSummary(
   };
 }
 
+/** @param {{cycleId?: string | null, propertyId?: string | null, destination?: string | null, month?: string | null, limit?: number | null}} [options] */
 export async function listHarvests({
   cycleId = null,
   propertyId = null,
