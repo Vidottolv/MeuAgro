@@ -6,6 +6,7 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+.patch
 
 # Capacitor / Android
 android/.gradle/

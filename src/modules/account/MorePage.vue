@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const items = [
+  { iconName:'users',title:'Compartilhamento técnico',description:'Convites e acompanhamento autorizado por propriedade',href:'/more/sharing' },
   { iconName:'clipboard',title:'Visitas técnicas',description:'Anamnese, acompanhamento e fotos de campo',href:'/more/visits' },
   {
     iconName: 'cart',

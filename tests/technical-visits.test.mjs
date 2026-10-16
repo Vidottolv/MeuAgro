@@ -1,5 +1,6 @@
 import test from 'node:test';
 import './visit-followup.test.mjs';
+import './property-sharing.test.mjs';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';

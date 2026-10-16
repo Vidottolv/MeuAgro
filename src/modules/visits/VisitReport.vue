@@ -5,6 +5,7 @@ defineProps({
   visit: { type: Object, required: true },
   photos: { type: Array, default: () => [] },
   native: Boolean,
+  photosIncluded: { type: Boolean, default: true },
 });
 defineEmits(['close']);
 const printReport = () => window.print();
@@ -92,7 +93,8 @@ function keepFocus(event) {
         <p class="visit-report-text">{{ visit.anamnesis?.[key] || 'Não informado' }}</p>
       </section>
       <h2>Fotos e observações</h2>
-      <p v-if="!photos.length">Nenhuma foto registrada.</p>
+      <p v-if="!photosIncluded">Fotos não incluídas neste compartilhamento.</p>
+      <p v-else-if="!photos.length">Nenhuma foto registrada.</p>
       <figure v-for="photo in photos" :key="photo.id">
         <img
           v-if="photo.signed_url"

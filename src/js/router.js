@@ -158,6 +158,12 @@ const privateRoute = (render) => ({
 });
 
 const routes = {
+  '/more/sharing': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/sharing/SharingPage.vue');
+    const app=withShell({session,title:'Compartilhamento técnico',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
   '/more/visits': privateRoute(async ({session}) => {
     const {withShell}=await import('../modules/shared/mountShell.js');
     const {default:Page}=await import('../modules/visits/VisitsPage.vue');
