@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useOffline } from '../../offline/useOffline.js';
+const { status } = useOffline();
 import { useResource } from '../inventory/shared/useResource';
 import { fetchPlanting } from './plantingRepository';
 import { title, quantityLabel, isArchived, canHarvest } from './plantingModel';
@@ -109,7 +111,11 @@ function changed(item: Planting) {
             >
           </div>
         </section>
-        <PlantingHarvests :id="data.id" :can-create="canHarvest(data)" /><PlantingFinance
+        <PlantingHarvests
+          v-if="status.online"
+          :id="data.id"
+          :can-create="canHarvest(data)" /><PlantingFinance
+          v-if="status.online"
           :id="data.id" /><PlantingEvents :id="data.id" :archived="isArchived(data)"
       /></template>
       <section v-else class="rural-panel">

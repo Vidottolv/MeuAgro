@@ -35,6 +35,7 @@ function cost(event: PlantingEvent) {
       <article v-for="event in data" :key="event.id" class="rural-card planting-event">
         <p>{{ getProductionEventTypeLabel(event.event_type) }}</p>
         <h4>{{ event.title }}</h4>
+        <p v-if="event.offline_pending" role="status">Salvo neste dispositivo • aguardando envio</p>
         <time>{{ formatDateTimePtBr(event.occurred_at) }}</time>
         <p v-if="event.description" class="event-text">{{ event.description }}</p>
         <p v-if="event.notes" class="event-text">Observações: {{ event.notes }}</p>

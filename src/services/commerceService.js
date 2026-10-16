@@ -29,5 +29,5 @@ export async function commerceCommand(action, data = {}) {
 export function sellerAccess(seller, memberships, userId) {
   if (seller.owner_id === userId) return { owner: true, active: true, label: seller.kind === 'personal' ? 'Por conta própria' : 'Responsável pela empresa' };
   const member = memberships.find(row => row.seller_id === seller.id && row.user_id === userId);
-  return { owner: false, active: !!member?.active, label: member?.active ? 'Representante' : 'Vínculo encerrado' };
+  return { owner: false, active: !!member?.active, label: member?.active ? member.management_role === 'manager' ? 'Gerente' : 'Representante' : 'Vínculo encerrado' };
 }

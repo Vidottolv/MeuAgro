@@ -25,6 +25,11 @@ export const approvalStatus = {
   superseded: 'Substituída ou invalidada',
 };
 export const auditLabels = {
+  team_invite: 'Convite de equipe criado',
+  team_revoke_invite: 'Convite de equipe cancelado',
+  team_set_role: 'Permissões da equipe alteradas',
+  team_remove_member: 'Vínculo da equipe encerrado',
+  team_accept_invite: 'Convite de equipe aceito',
   grant: 'Permissões alteradas',
   settings: 'Limites alterados',
   goal: 'Meta alterada',

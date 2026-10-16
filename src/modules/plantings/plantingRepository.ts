@@ -15,6 +15,8 @@ import { listProductionEvents } from '../../services/productionEventService.js';
 import { listHarvests } from '../../services/harvestService.js';
 import { getCycleFinancialSummary } from '../../services/financeService.js';
 import { isArchived, plantingPayload } from './plantingModel';
+import { isOnline } from '../../offline/runtime.js';
+import { OPEN_PRODUCTION_CYCLE_STATUSES } from '../../constants/productionCycleStatus.js';
 import type {
   Planting,
   PlantingFields,
@@ -31,6 +33,16 @@ export interface Filters {
   open: boolean;
 }
 export async function fetchPlantings(f: Filters): Promise<Planting[]> {
+  if (!isOnline() && !f.archived) {
+    const rows = (await listProductionCycles()) as unknown as Planting[];
+    return rows.filter(
+      (row) =>
+        (!f.property || row.property_id === f.property) &&
+        (!f.crop || row.crop_id === f.crop) &&
+        (!f.status || row.status === f.status) &&
+        (!f.open || OPEN_PRODUCTION_CYCLE_STATUSES.includes(row.status)),
+    );
+  }
   return (await listProductionCycles({
     propertyId: f.property || null,
     cropId: f.crop || null,

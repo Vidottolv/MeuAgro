@@ -16,6 +16,7 @@ export interface CropFields {
   notes: string;
 }
 export interface EventRecord {
+  offline_pending?: boolean;
   id: string;
   production_cycle_id: string;
   event_type: string;
@@ -50,6 +51,7 @@ export interface Lot {
   deleted_at: string | null;
 }
 export interface Photo {
+  offline_pending?: boolean;
   id: string;
   production_cycle_id: string;
   storage_path: string;

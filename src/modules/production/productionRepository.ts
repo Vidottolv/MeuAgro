@@ -19,15 +19,11 @@ import {
 import { listAgriculturalInputs } from '../../services/agriculturalInputService.js';
 import { listInventoryLots } from '../../services/inventoryLotService.js';
 import { createEventInput, getInputCurrentBalance } from '../../services/eventInputService.js';
-import {
-  listCyclePhotos,
-  deletePhoto,
-  uploadCyclePhotoFile,
-  createPhotoRecord,
-  removePhotoFile,
-} from '../../services/photoService.js';
+import { listCyclePhotos, deletePhoto } from '../../services/photoService.js';
 import { listHarvestForecastCycles } from '../../services/harvestForecastService.js';
 import { localDateTime, quantity } from './productionModel';
+import { queueFieldPhoto } from '../../offline/runtime.js';
+import { validatePhotoFile } from '../../services/photoService.js';
 import type {
   Crop,
   CropFields,
@@ -101,39 +97,7 @@ export async function savePhoto(
   description: string,
   capturedAt: string,
 ) {
-  let path: string | null = null,
-    autoId: string | null = null;
-  try {
-    path = await uploadCyclePhotoFile({ file, cycle: planting });
-    if (eventId === '__auto__') {
-      const event = await createProductionEvent(planting.id, {
-        eventType: 'photo',
-        title: 'Registro fotográfico',
-        description: description || 'Foto adicionada à evolução visual do ciclo.',
-        notes: '',
-        occurredAt: localDateTime(capturedAt),
-      });
-      if (!event?.id) throw new Error('Não foi possível confirmar o evento fotográfico.');
-      autoId = event.id;
-    }
-    const photo = await createPhotoRecord({
-      cycle: planting,
-      eventId: autoId || (eventId === '__auto__' ? null : eventId) || null,
-      storagePath: path,
-      description,
-      capturedAt: localDateTime(capturedAt),
-    });
-    if (!photo?.id) throw new Error('Não foi possível confirmar o registro da foto.');
-    return photo.id as string;
-  } catch (error) {
-    const cleanup = await Promise.allSettled([
-      ...(path ? [removePhotoFile(path)] : []),
-      ...(autoId ? [deleteProductionEvent(autoId)] : []),
-    ]);
-    if (cleanup.some((r) => r.status === 'rejected'))
-      throw new Error(
-        'O envio falhou e a limpeza não foi concluída. Confira a galeria e a linha do tempo antes de repetir.',
-      );
-    throw error;
-  }
+  const error = validatePhotoFile(file);
+  if (error) throw new Error(error);
+  return queueFieldPhoto(planting, file, eventId, description, localDateTime(capturedAt));
 }

@@ -9,6 +9,7 @@ import {
 import {
   signPhotos,
 } from './photoService.js';
+import { offlineEngine, queueFieldEvent, isOnline } from '../offline/runtime.js';
 
 const EVENT_FIELDS = `
   id,
@@ -179,14 +180,15 @@ export async function listProductionEvents(
     throw error;
   }
 
-  return signEventPhotos(
-    data ?? [],
-  );
+  const rows = await offlineEngine.merge('production_events', data ?? [], row => row.production_cycle_id === cycleId, isOnline());
+  return signEventPhotos(rows.sort((a, b) => b.occurred_at.localeCompare(a.occurred_at)));
 }
 
 export async function getProductionEventById(
   eventId,
 ) {
+  const local = (await offlineEngine.localRows('production_events')).find(row => row.id === eventId);
+  if (local) return (await signEventPhotos([local]))[0];
   const client =
     requireSupabase();
 
@@ -229,45 +231,7 @@ export async function createProductionEvent(
   cycleId,
   formData,
 ) {
-  const client =
-    requireSupabase();
-
-  const user =
-    await getCurrentUser();
-
-  if (!user) {
-    throw new Error(
-      'Sua sessão expirou. Entre novamente.',
-    );
-  }
-
-  const {
-    data,
-    error,
-  } =
-    await client
-      .from(
-        'production_events',
-      )
-      .insert({
-        ...normalizePayload(
-          formData,
-        ),
-        user_id:
-          user.id,
-        production_cycle_id:
-          cycleId,
-      })
-      .select(
-        EVENT_FIELDS,
-      )
-      .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
+  return queueFieldEvent(cycleId, normalizePayload(formData));
 }
 
 export async function updateProductionEvent(
@@ -275,6 +239,8 @@ export async function updateProductionEvent(
   cycleId,
   formData,
 ) {
+  if (!isOnline()) throw Error('A edição de eventos existentes precisa de conexão. Você pode registrar um novo evento offline.');
+  if ((await offlineEngine.localRows('production_events')).some(row => row.id === eventId)) throw Error('Sincronize e atualize a linha do tempo antes de editar este evento.');
   const client =
     requireSupabase();
 
@@ -327,6 +293,8 @@ export async function updateProductionEvent(
 export async function deleteProductionEvent(
   eventId,
 ) {
+  if (!isOnline()) throw Error('A exclusão de eventos precisa de conexão.');
+  if ((await offlineEngine.localRows('production_events')).some(row => row.id === eventId)) throw Error('Sincronize e atualize a linha do tempo antes de excluir este evento.');
   const client =
     requireSupabase();
 

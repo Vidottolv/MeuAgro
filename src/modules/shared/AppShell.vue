@@ -2,6 +2,7 @@
 import { computed, ref, onScopeDispose } from 'vue';
 import { tradeUnreadCount } from '../../services/tradeNotificationService.js';
 import AppIcon from './AppIcon.vue';
+import OfflineBanner from '../../offline/OfflineBanner.vue';
 const props = withDefaults(
   defineProps<{
     session?: { user?: { email?: string; user_metadata?: { full_name?: string } } };
@@ -72,6 +73,7 @@ const commercial = [
         </div>
       </header>
     </div>
+    <OfflineBanner />
     <main class="app-content"><slot /></main>
     <div class="bottom-nav-wrap">
       <nav v-if="activeNav === 'commerce'" class="commerce-nav" aria-label="Navegação comercial">

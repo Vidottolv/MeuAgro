@@ -5,9 +5,11 @@ import {
 import {
   getCurrentUser,
 } from './authService.js';
+import { offlineEngine, isOnline, localPhotoUrl, cachePhoto } from '../offline/runtime.js';
 
 const PHOTO_BUCKET =
   'meu-agro-photos';
+export const offlinePhotoAvailable = async photo => !!await localPhotoUrl(photo);
 
 const MAX_IMAGE_SIZE =
   8 * 1024 * 1024;
@@ -342,9 +344,8 @@ export async function listCyclePhotos(
     throw error;
   }
 
-  return signPhotos(
-    data ?? [],
-  );
+  const rows = await offlineEngine.merge('event_photos', data ?? [], row => row.production_cycle_id === cycleId, isOnline());
+  return signPhotos(rows.sort((a, b) => a.captured_at.localeCompare(b.captured_at)));
 }
 
 export async function signPhotos(
@@ -357,6 +358,9 @@ export async function signPhotos(
   return Promise.all(
     (photos ?? []).map(
       async (photo) => {
+        const localUrl = await localPhotoUrl(photo);
+        if (localUrl) return { ...photo, signed_url: localUrl };
+        if (!isOnline()) return { ...photo, signed_url: null };
         if (
           !photo?.storage_path
         ) {
@@ -392,6 +396,9 @@ export async function signPhotos(
           };
         }
 
+        if (data?.signedUrl) {
+          try { await cachePhoto(photo, data.signedUrl); } catch { /* Online image remains available. */ }
+        }
         return {
           ...photo,
           signed_url:
@@ -406,6 +413,8 @@ export async function signPhotos(
 export async function deletePhoto(
   photo,
 ) {
+  if (!isOnline()) throw Error('A exclusão de fotos precisa de conexão.');
+  if ((await offlineEngine.localRows('event_photos')).some(row => row.id === photo.id)) throw Error('Sincronize e atualize a galeria antes de excluir esta foto.');
   const client =
     requireSupabase();
 

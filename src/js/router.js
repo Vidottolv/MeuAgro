@@ -158,6 +158,13 @@ const privateRoute = (render) => ({
 });
 
 const routes = {
+  '/more/visits': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/visits/VisitsPage.vue');
+    const app=withShell({session,title:'Visitas técnicas',activeNav:'more'})(Page,{onNavigate:path=>navigate(path)});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/consultor/equipe': privateRoute(async c => (await import('../modules/commerce/mount.js')).renderCompanyTeam(c)),
   '/consultor/gestao': privateRoute(renderManagement),
   '/consultor/acompanhamento': privateRoute(renderManagementWorkspace),
   '/consultor/resultados': privateRoute(renderSalesResults),

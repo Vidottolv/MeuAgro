@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const items = [
+  { iconName:'clipboard',title:'Visitas técnicas',description:'Anamnese, acompanhamento e fotos de campo',href:'/more/visits' },
   {
     iconName: 'cart',
     title: 'Minhas compras',
@@ -11,6 +12,12 @@ const items = [
     title: 'Meu espaço de consultor',
     description: 'Atuação própria, empresas e representantes',
     href: '/consultor',
+  },
+  {
+    iconName: 'users',
+    title: 'Gerentes e representantes',
+    description: 'Administre a equipe da sua empresa',
+    href: '/consultor/equipe',
   },
   {
     iconName: 'calendar',

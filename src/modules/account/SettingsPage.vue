@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
+import OfflineSettings from '../../offline/OfflineSettings.vue';
 import { useResource } from '../inventory/shared/useResource';
 import { useMutation } from '../production/useMutation';
 import RequestState from '../properties/components/RequestState.vue';
@@ -117,6 +118,7 @@ function run(kind: 'permission' | 'exact' | 'test') {
 </script>
 <template>
   <div class="rural-vue">
+    <OfflineSettings />
     <h2>Configurações</h2>
     <section class="rural-panel">
       <h3>Aparência</h3>

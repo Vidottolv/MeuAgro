@@ -1,0 +1,645 @@
+diff --git a/src/modules/visits/VisitsPage.vue b/src/modules/visits/VisitsPage.vue
+index 8b9d6d8..93d34f1 100644
+--- a/src/modules/visits/VisitsPage.vue
++++ b/src/modules/visits/VisitsPage.vue
+@@ -18,6 +18,8 @@ import { validatePhotoFile } from '../../services/photoService.js';
+ import { offlineUserId, isOnline } from '../../offline/runtime.js';
+ import { useOffline } from '../../offline/useOffline.js';
+ import { anamnesisFields, priorities } from './visitModel.js';
++import { matchesReturn, visitsCsv, returnCalendar, downloadVisitFile } from './visitFollowup.js';
++import VisitReport from './VisitReport.vue';
+ import { toDateTimeLocalValue } from '../../js/html.js';
+ import RequestState from '../properties/components/RequestState.vue';
+ import RuralDialog from '../properties/components/RuralDialog.vue';
+@@ -29,7 +31,10 @@ const q = new URLSearchParams(location.search),
+ const { status } = useOffline();
+ const team = ref(q.has('team')),
+   search = ref(''),
+-  priority = ref('');
++  priority = ref(''),
++  returnFilter = ref(''),
++  reportOpen = ref(false),
++  exportError = ref('');
+ const visits = useResource(() => listTechnicalVisits(team.value), []);
+ const selected = computed(() => visits.data.value.find((v) => v.id === visitId));
+ const options = useResource(async () => {
+@@ -94,6 +99,7 @@ const filtered = computed(() =>
+   visits.data.value.filter(
+     (v) =>
+       (!priority.value || v.priority === priority.value) &&
++      matchesReturn(v, returnFilter.value) &&
+       filterText(
+         [v.producer_name, v.site_name, v.area_name, v.crop_name, v.anamnesis.reason].join(' '),
+       ).includes(filterText(search.value)),
+@@ -101,6 +107,26 @@ const filtered = computed(() =>
+ );
+ const when = (value) => new Date(value).toLocaleString('pt-BR');
+ const native = isNativeCameraPlatform();
++function exportCsv() {
++  exportError.value = '';
++  try {
++    downloadVisitFile(visitsCsv(filtered.value), 'text/csv;charset=utf-8', 'meuagro-visitas.csv');
++  } catch {
++    exportError.value = 'Não foi possível exportar. Tente pela versão no navegador.';
++  }
++}
++function exportReturn() {
++  exportError.value = '';
++  try {
++    downloadVisitFile(
++      returnCalendar(selected.value),
++      'text/calendar;charset=utf-8',
++      'meuagro-retorno.ics',
++    );
++  } catch (error) {
++    exportError.value = error.message;
++  }
++}
+ function propertyChanged() {
+   f.site_name =
+     options.data.value?.properties.find((p) => p.id === f.property_id)?.name || f.site_name;
+@@ -436,6 +462,28 @@ async function saveMorePhotos() {
+             <p v-if="selected.next_visit">
+               Retorno sugerido: {{ selected.next_visit.split('-').reverse().join('/') }}
+             </p>
++            <button
++              class="button button--secondary"
++              :disabled="gallery.loading.value || !!gallery.error.value"
++              @click="reportOpen = true"
++            >
++              Visualizar relatório
++            </button>
++            <p v-if="gallery.error.value">
++              Atualize as fotos abaixo para gerar o relatório completo.
++            </p>
++            <button
++              v-if="selected.next_visit"
++              class="button button--secondary"
++              @click="exportReturn"
++            >
++              Exportar retorno para calendário
++            </button>
++            <p v-if="selected.next_visit">
++              O arquivo deve ser importado no seu calendário. A data é sugerida; não há lembrete
++              automático nem atualização posterior do evento.
++            </p>
++            <p v-if="exportError" role="alert">{{ exportError }}</p>
+             <a
+               v-if="selected.production_cycle_id && selected.author_id === offlineUserId()"
+               :href="'/plantings/' + encodeURIComponent(selected.production_cycle_id)"
+@@ -553,6 +601,31 @@ async function saveMorePhotos() {
+         >
+           Atualizar visitas
+         </button>
++        <div class="field">
++          <label for="visit-return-filter">Retorno sugerido</label>
++          <select id="visit-return-filter" v-model="returnFilter">
++            <option value="">Todos</option>
++            <option value="overdue">Data anterior a hoje</option>
++            <option value="today">Hoje</option>
++            <option value="week">Próximos sete dias (a partir de amanhã)</option>
++            <option value="none">Sem retorno definido</option>
++          </select>
++        </div>
++        <p>
++          Datas sugeridas não indicam conclusão ou atraso de uma tarefa. Os filtros e a exportação
++          abrangem somente as visitas carregadas.
++        </p>
++        <button
++          class="button button--secondary"
++          :disabled="!filtered.length || visits.loading.value || !!visits.error.value"
++          @click="exportCsv"
++        >
++          Exportar lista filtrada (CSV)
++        </button>
++        <p v-if="native">
++          Se o download não estiver disponível no aplicativo, use a versão pelo navegador.
++        </p>
++        <p v-if="exportError" role="alert">{{ exportError }}</p>
+       </section>
+       <RequestState
+         :loading="visits.loading.value"
+@@ -568,6 +641,9 @@ async function saveMorePhotos() {
+           <p>Registrada por {{ v.technician_name }}</p>
+           <p>{{ v.area_name || 'Visita geral' }} • {{ v.crop_name || 'Sem cultura específica' }}</p>
+           <p>{{ priorities[v.priority] }} • {{ v.anamnesis.reason }}</p>
++          <p v-if="v.next_visit">
++            Retorno sugerido: {{ v.next_visit.split('-').reverse().join('/') }}
++          </p>
+           <p v-if="v.offline_pending">Aguardando envio</p>
+           <a
+             :href="'/more/visits?id=' + encodeURIComponent(v.id) + (team ? '&team=1' : '')"
+@@ -578,6 +654,13 @@ async function saveMorePhotos() {
+         </article></RequestState
+       >
+     </template>
++    <VisitReport
++      v-if="reportOpen && selected"
++      :visit="selected"
++      :photos="gallery.data.value"
++      :native="native"
++      @close="reportOpen = false"
++    />
+     <RuralDialog
+       v-if="previewed"
+       title="Foto da visita técnica"
+diff --git a/tests/browser/technical-visits.cjs b/tests/browser/technical-visits.cjs
+index 3cd670a..a37fc86 100644
+--- a/tests/browser/technical-visits.cjs
++++ b/tests/browser/technical-visits.cjs
+@@ -173,19 +173,18 @@ const server = createServer(async (req, res) => {
+       .locator('#visit-producer_report')
+       .fill('O produtor observou o problema há três dias.');
+     await page.locator('#visit-symptoms').fill('Lesões nas folhas do talhão norte.');
++    await page.locator('#visit-next').fill('2027-01-06');
+     await page
+       .locator('#visit-recommendations')
+       .fill('Coleta de amostras e acompanhamento combinado.');
+-    await page
+-      .locator('input[type=file]')
+-      .setInputFiles({
+-        name: 'folha.png',
+-        mimeType: 'image/png',
+-        buffer: Buffer.from(
+-          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6bW8AAAAASUVORK5CYII=',
+-          'base64',
+-        ),
+-      });
++    await page.locator('input[type=file]').setInputFiles({
++      name: 'folha.png',
++      mimeType: 'image/png',
++      buffer: Buffer.from(
++        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6bW8AAAAASUVORK5CYII=',
++        'base64',
++      ),
++    });
+     await page.getByLabel('Legenda da foto 1', { exact: true }).fill('Folha com manchas');
+     await page.getByRole('button', { name: 'Registrar anamnese', exact: true }).click();
+     await page.getByRole('heading', { name: 'Ficha de visita técnica', exact: true }).waitFor();
+@@ -197,6 +196,35 @@ const server = createServer(async (req, res) => {
+     );
+     await page.reload();
+     await page.getByText('Manchas nas folhas do milho', { exact: true }).waitFor();
++    await page.getByRole('button', { name: 'Visualizar relatório', exact: true }).click();
++    const report = page.getByRole('dialog', { name: 'MeuAgro — Relatório de visita técnica' });
++    await report.waitFor();
++    await report.getByText('Produtor João', { exact: true }).waitFor();
++    await report
++      .getByText('Pendente de sincronização — salvo neste dispositivo.', { exact: true })
++      .waitFor();
++    assert.equal(await report.getByRole('img', { name: 'Folha com manchas' }).count(), 1);
++    await page.emulateMedia({ media: 'print' });
++    assert.equal(await page.locator('.visit-report-actions').isVisible(), false);
++    assert.equal(await report.getByRole('heading', { level: 1 }).isVisible(), true);
++    await page.emulateMedia({ media: 'screen' });
++    await report.getByRole('button', { name: 'Fechar relatório', exact: true }).focus();
++    await page.keyboard.press('Escape');
++    await report.waitFor({ state: 'detached' });
++    assert.equal(
++      await page
++        .getByRole('button', { name: 'Visualizar relatório', exact: true })
++        .evaluate((el) => el === document.activeElement),
++      true,
++    );
++    const calendarDownload = page.waitForEvent('download');
++    await page
++      .getByRole('button', { name: 'Exportar retorno para calendário', exact: true })
++      .click();
++    const calendar = await calendarDownload;
++    assert.equal(calendar.suggestedFilename(), 'meuagro-retorno.ics');
++    assert.match(await readFile(await calendar.path(), 'utf8'), /DTSTART;VALUE=DATE:20270106/);
++    console.log('PASS: offline report, photo, print layout, focus restoration and calendar export');
+     await page.getByRole('img', { name: 'Folha com manchas', exact: true }).waitFor();
+     assert.equal(
+       await page
+@@ -229,6 +257,14 @@ const server = createServer(async (req, res) => {
+     await page.goto('http://127.0.0.1:4184/more/visits');
+     await page.locator('#visit-search').fill('TALHAO NORTE');
+     await page.getByRole('link', { name: 'Abrir anamnese', exact: true }).waitFor();
++    await page.locator('#visit-return-filter').selectOption('none');
++    assert.equal(await page.getByRole('link', { name: 'Abrir anamnese', exact: true }).count(), 0);
++    await page.locator('#visit-return-filter').selectOption('');
++    const csvDownload = page.waitForEvent('download');
++    await page.getByRole('button', { name: 'Exportar lista filtrada (CSV)', exact: true }).click();
++    const csv = await csvDownload;
++    assert.match(await readFile(await csv.path(), 'utf8'), /Produtor João/);
++    console.log('PASS: return filter and CSV export follow the loaded history');
+     assert.deepEqual(errors, []);
+     console.log('PASS: searchable visit history and no uncaught browser errors');
+     await context.close();
+diff --git a/tests/technical-visits.test.mjs b/tests/technical-visits.test.mjs
+index bfba54b..560b095 100644
+--- a/tests/technical-visits.test.mjs
++++ b/tests/technical-visits.test.mjs
+@@ -1,4 +1,5 @@
+ import test from 'node:test';
++import './visit-followup.test.mjs';
+ import assert from 'node:assert/strict';
+ import { randomUUID } from 'node:crypto';
+ import { readFileSync } from 'node:fs';
+diff --git a/src/modules/visits/VisitReport.vue b/src/modules/visits/VisitReport.vue
+new file mode 100644
+index 0000000..64b88ec
+--- /dev/null
++++ b/src/modules/visits/VisitReport.vue
+@@ -0,0 +1,188 @@
++<script setup>
++import { onMounted, onBeforeUnmount, ref } from 'vue';
++import { anamnesisFields, priorities } from './visitModel.js';
++defineProps({
++  visit: { type: Object, required: true },
++  photos: { type: Array, default: () => [] },
++  native: Boolean,
++});
++defineEmits(['close']);
++const printReport = () => window.print();
++const when = (value) => new Date(value).toLocaleString('pt-BR');
++const root = ref(null);
++const previousFocus = document.activeElement;
++const siblings = [];
++onMounted(() => {
++  for (const element of document.body.children) {
++    if (element !== root.value && element instanceof HTMLElement) {
++      siblings.push([element, element.inert]);
++      element.inert = true;
++    }
++  }
++  root.value?.querySelector('button')?.focus();
++});
++onBeforeUnmount(() => {
++  for (const [element, inert] of siblings) element.inert = inert;
++  previousFocus?.focus();
++});
++function keepFocus(event) {
++  const buttons = [...root.value.querySelectorAll('button')];
++  const first = buttons[0],
++    last = buttons.at(-1);
++  if (event.shiftKey && document.activeElement === first) {
++    event.preventDefault();
++    last.focus();
++  } else if (!event.shiftKey && document.activeElement === last) {
++    event.preventDefault();
++    first.focus();
++  }
++}
++</script>
++<template>
++  <Teleport to="body">
++    <section
++      ref="root"
++      class="visit-report-root"
++      role="dialog"
++      aria-modal="true"
++      aria-labelledby="visit-report-title"
++      tabindex="-1"
++      @keydown.esc="$emit('close')"
++      @keydown.tab="keepFocus"
++    >
++      <nav class="visit-report-actions">
++        <button v-if="!native" class="button button--primary" @click="printReport">
++          Imprimir / salvar PDF
++        </button>
++        <button class="button button--secondary" autofocus @click="$emit('close')">
++          Fechar relatório
++        </button>
++        <p v-if="native">A impressão em PDF está disponível na versão pelo navegador.</p>
++        <p v-else>No diálogo de impressão, escolha salvar como PDF para gerar o arquivo.</p>
++      </nav>
++      <h1 id="visit-report-title">MeuAgro — Relatório de visita técnica</h1>
++      <p>Registro de acompanhamento técnico. Não substitui receituário agronômico.</p>
++      <p v-if="visit.offline_pending">
++        <strong>Pendente de sincronização — salvo neste dispositivo.</strong>
++      </p>
++      <dl>
++        <dt>Produtor</dt>
++        <dd>{{ visit.producer_name }}</dd>
++        <dt>Propriedade</dt>
++        <dd>{{ visit.site_name }}</dd>
++        <dt>Talhão / setor</dt>
++        <dd>{{ visit.area_name || 'Não informado' }}</dd>
++        <dt>Cultura / variedade</dt>
++        <dd>{{ visit.crop_name || 'Não informada' }}</dd>
++        <dt>Profissional</dt>
++        <dd>{{ visit.technician_name }}</dd>
++        <dt>Data da visita</dt>
++        <dd>{{ when(visit.visited_at) }}</dd>
++        <dt>Prioridade</dt>
++        <dd>{{ priorities[visit.priority] }}</dd>
++        <dt>Retorno sugerido</dt>
++        <dd>{{ visit.next_visit?.split('-').reverse().join('/') || 'Não informado' }}</dd>
++        <dt>Vínculo</dt>
++        <dd>
++          {{ visit.seller_id ? 'Ficha vinculada à empresa' : 'Ficha pessoal / independente' }}
++        </dd>
++      </dl>
++      <section v-for="[key, label] in anamnesisFields" :key="key">
++        <h2>{{ label }}</h2>
++        <p class="visit-report-text">{{ visit.anamnesis?.[key] || 'Não informado' }}</p>
++      </section>
++      <h2>Fotos e observações</h2>
++      <p v-if="!photos.length">Nenhuma foto registrada.</p>
++      <figure v-for="photo in photos" :key="photo.id">
++        <img
++          v-if="photo.signed_url"
++          :src="photo.signed_url"
++          :alt="photo.description || 'Foto da visita'"
++        />
++        <p v-else>Imagem indisponível neste dispositivo.</p>
++        <figcaption>
++          {{ photo.description || 'Sem legenda'
++          }}{{ photo.offline_pending ? ' — aguardando envio' : '' }}
++        </figcaption>
++      </figure>
++      <footer>Identificador da ficha: {{ visit.id }}. Documento sem assinatura digital.</footer>
++    </section>
++  </Teleport>
++</template>
++<style>
++.visit-report-root {
++  position: fixed;
++  inset: 0;
++  z-index: 10000;
++  overflow: auto;
++  background: white;
++  color: #17251b;
++  padding: 1.5rem;
++  font:
++    16px/1.5 system-ui,
++    sans-serif;
++}
++.visit-report-root dt {
++  font-weight: bold;
++}
++.visit-report-root dd {
++  margin: 0 0 0.7rem;
++}
++.visit-report-root h2 {
++  font-size: 1.1rem;
++}
++.visit-report-root img {
++  max-width: 100%;
++  max-height: 22rem;
++  object-fit: contain;
++}
++.visit-report-root figure {
++  margin: 1rem 0;
++  break-inside: avoid;
++}
++.visit-report-text,
++.visit-report-root dd,
++.visit-report-root figcaption {
++  white-space: pre-wrap;
++  overflow-wrap: anywhere;
++}
++.visit-report-root footer {
++  margin-top: 2rem;
++  font-size: 0.8rem;
++  overflow-wrap: anywhere;
++}
++.visit-report-actions {
++  position: sticky;
++  top: 0;
++  background: white;
++  padding-bottom: 0.5rem;
++}
++@media print {
++  @page {
++    size: A4;
++    margin: 15mm;
++  }
++  body:has(> .visit-report-root) > :not(.visit-report-root) {
++    display: none !important;
++  }
++  body:has(> .visit-report-root),
++  html:has(.visit-report-root) {
++    overflow: visible !important;
++    height: auto !important;
++    background: white !important;
++  }
++  .visit-report-root {
++    position: static;
++    overflow: visible;
++    height: auto;
++    padding: 0;
++    font-size: 11pt;
++  }
++  .visit-report-actions {
++    display: none;
++  }
++  .visit-report-root h2 {
++    break-after: avoid;
++  }
++}
++</style>
+diff --git a/src/modules/visits/visitFollowup.js b/src/modules/visits/visitFollowup.js
+new file mode 100644
+index 0000000..08b48e4
+--- /dev/null
++++ b/src/modules/visits/visitFollowup.js
+@@ -0,0 +1,114 @@
++// Civil dates must not pass through UTC when filtering a local calendar day.
++export function localDay(date = new Date()) {
++  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
++}
++export function matchesReturn(visit, filter, now = new Date()) {
++  const day = visit.next_visit;
++  const today = localDay(now);
++  if (!filter) return true;
++  if (filter === 'none') return !day;
++  if (!day) return false;
++  if (filter === 'overdue') return day < today;
++  if (filter === 'today') return day === today;
++  const end = new Date(now);
++  end.setDate(end.getDate() + 7);
++  return filter === 'week' && day > today && day <= localDay(end);
++}
++function csvCell(value) {
++  let text = String(value ?? '');
++  if (/^[\s\uFEFF]*[=+@-]/u.test(text)) text = "'" + text;
++  return '"' + text.replaceAll('"', '""') + '"';
++}
++export function visitsCsv(visits) {
++  const columns = [
++    'Data da visita (ISO)',
++    'Produtor',
++    'Propriedade',
++    'Talhão',
++    'Cultura',
++    'Técnico',
++    'Prioridade',
++    'Retorno sugerido',
++    'Motivo',
++    'Sincronização',
++  ];
++  const rows = visits.map((v) => [
++    v.visited_at,
++    v.producer_name,
++    v.site_name,
++    v.area_name,
++    v.crop_name,
++    v.technician_name,
++    v.priority,
++    v.next_visit,
++    v.anamnesis?.reason,
++    v.offline_pending ? 'Pendente' : 'Sincronizada',
++  ]);
++  return '\uFEFF' + [columns, ...rows].map((row) => row.map(csvCell).join(';')).join('\r\n');
++}
++const icalText = (value) =>
++  String(value ?? '')
++    .replaceAll('\\', '\\\\')
++    .replace(/\r\n|\r|\n/g, '\\n')
++    .replaceAll(';', '\\;')
++    .replaceAll(',', '\\,');
++function foldLine(line) {
++  const encoder = new TextEncoder();
++  let result = '',
++    size = 0;
++  for (const char of line) {
++    const bytes = encoder.encode(char).length;
++    if (size + bytes > 75) {
++      result += '\r\n ';
++      size = 1;
++    }
++    result += char;
++    size += bytes;
++  }
++  return result;
++}
++export function returnCalendar(visit, now = new Date()) {
++  const date = visit.next_visit;
++  const parsed = new Date(date + 'T12:00:00');
++  if (
++    !/^\d{4}-\d{2}-\d{2}$/.test(date || '') ||
++    !Number.isFinite(parsed.getTime()) ||
++    localDay(parsed) !== date
++  )
++    throw Error('Esta visita não possui uma data de retorno válida.');
++  parsed.setDate(parsed.getDate() + 1);
++  const stamp = now
++    .toISOString()
++    .replace(/[-:]/g, '')
++    .replace(/\.\d{3}/, '');
++  return [
++    'BEGIN:VCALENDAR',
++    'VERSION:2.0',
++    'PRODID:-//MeuAgro//Retornos//PT-BR',
++    'CALSCALE:GREGORIAN',
++    'BEGIN:VEVENT',
++    `UID:${icalText(visit.id)}-retorno@meuagro`,
++    `DTSTAMP:${stamp}`,
++    `DTSTART;VALUE=DATE:${date.replaceAll('-', '')}`,
++    `DTEND;VALUE=DATE:${localDay(parsed).replaceAll('-', '')}`,
++    `SUMMARY:${icalText('Retorno sugerido — ' + visit.producer_name)}`,
++    `LOCATION:${icalText([visit.site_name, visit.area_name].filter(Boolean).join(' / '))}`,
++    `DESCRIPTION:${icalText((visit.anamnesis?.reason || '') + (visit.offline_pending ? '\nVisita pendente de sincronização.' : ''))}`,
++    'TRANSP:TRANSPARENT',
++    'END:VEVENT',
++    'END:VCALENDAR',
++    '',
++  ]
++    .map(foldLine)
++    .join('\r\n');
++}
++export function downloadVisitFile(contents, type, filename) {
++  const url = URL.createObjectURL(new Blob([contents], { type }));
++  const link = document.createElement('a');
++  link.href = url;
++  link.download = filename;
++  document.body.append(link);
++  link.click();
++  link.remove();
++  setTimeout(() => URL.revokeObjectURL(url), 60000);
++}
+diff --git a/tests/visit-followup.test.mjs b/tests/visit-followup.test.mjs
+new file mode 100644
+index 0000000..37eb4a9
+--- /dev/null
++++ b/tests/visit-followup.test.mjs
+@@ -0,0 +1,67 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {
++  matchesReturn,
++  visitsCsv,
++  returnCalendar,
++  localDay,
++} from '../src/modules/visits/visitFollowup.js';
++
++test('retornos usam datas locais, próximos sete dias e virada do ano', () => {
++  const now = new Date(2026, 11, 30, 23, 45);
++  assert.equal(localDay(now), '2026-12-30');
++  for (const [date, filter, expected] of [
++    ['2026-12-29', 'overdue', true],
++    ['2026-12-30', 'overdue', false],
++    ['2026-12-30', 'today', true],
++    ['2026-12-30', 'week', false],
++    ['2027-01-06', 'week', true],
++    ['2027-01-07', 'week', false],
++    [null, 'none', true],
++    [null, 'today', false],
++    [null, '', true],
++  ])
++    assert.equal(matchesReturn({ next_visit: date }, filter, now), expected);
++});
++
++test('CSV mantém Unicode, múltiplas linhas e neutraliza fórmulas em planilhas', () => {
++  const text = visitsCsv([
++    {
++      producer_name: '=HYPERLINK("bad")',
++      site_name: 'Sítio; "João"\nNorte',
++      area_name: '\t+CMD',
++      crop_name: '-1+1',
++      technician_name: '@SUM(1)',
++      anamnesis: { reason: ' \n=1+1' },
++      offline_pending: true,
++    },
++  ]);
++  assert.ok(text.startsWith('\uFEFF'));
++  assert.ok(text.includes('"\'=HYPERLINK(""bad"")"'));
++  assert.ok(text.includes('"Sítio; ""João""\nNorte"'));
++  assert.ok(text.includes('"\'\t+CMD"'));
++  assert.ok(text.includes('"\'-1+1"'));
++  assert.ok(text.includes('"\'@SUM(1)"'));
++  assert.ok(text.includes('Pendente'));
++});
++
++test('ICS usa evento civil, fim exclusivo, UID estável e escape sem injeção', () => {
++  const visit = {
++    id: 'abc',
++    next_visit: '2026-12-31',
++    producer_name: 'João\nBEGIN:VALARM',
++    site_name: 'Sítio, Norte; 2',
++    anamnesis: { reason: 'á'.repeat(100) },
++    offline_pending: true,
++  };
++  const text = returnCalendar(visit, new Date('2026-10-16T12:00:00Z'));
++  assert.ok(text.includes('DTSTART;VALUE=DATE:20261231\r\nDTEND;VALUE=DATE:20270101'));
++  assert.ok(text.includes('UID:abc-retorno@meuagro'));
++  assert.ok(text.includes('João\\nBEGIN:VALARM'));
++  assert.ok(!text.includes('\r\nBEGIN:VALARM'));
++  assert.ok(text.includes('Sítio\\, Norte\\; 2'));
++  assert.ok(text.replaceAll('\r\n ', '').includes('pendente de sincronização'));
++  for (const line of text.split('\r\n')) assert.ok(Buffer.byteLength(line) <= 75);
++  assert.throws(() => returnCalendar({ ...visit, next_visit: '2026-02-30' }));
++  assert.throws(() => returnCalendar({ ...visit, next_visit: null }));
++});
+diff --git a/ACOMPANHAMENTO-VISITAS.md b/ACOMPANHAMENTO-VISITAS.md
+new file mode 100644
+index 0000000..b0557d4
+--- /dev/null
++++ b/ACOMPANHAMENTO-VISITAS.md
+@@ -0,0 +1,13 @@
++# Acompanhamento de visitas técnicas
++
++Sobre a etapa 33, esta entrega acrescenta relatório de anamnese com fotos, impressão pelo navegador, CSV filtrado, filtro por retorno e exportação individual de retorno em ICS. Não altera o banco nem amplia permissões.
++
++Na ficha, aguarde carregar as fotos e clique em **Visualizar relatório**. No navegador, use **Imprimir / salvar PDF**. No aplicativo Android, a visualização está disponível; impressão nativa ainda não foi integrada. Fotos indisponíveis offline são indicadas no documento. O relatório inclui dados pendentes de sincronização com identificação explícita; não tem assinatura digital e não é receituário agronômico.
++
++Na lista, combine busca, prioridade e retorno. **Próximos sete dias** conta de amanhã até o sétimo dia, inclusive. Datas anteriores não significam tarefas atrasadas: esta etapa não controla conclusão. Filtros e CSV usam apenas as 200 visitas mais recentes carregadas e os registros locais pendentes. CSV usa UTF-8, separador ponto e vírgula e proteção de células interpretáveis como fórmulas.
++
++Na ficha com retorno, exporte um ICS e importe no calendário escolhido. É um evento de dia inteiro, sem alarme, contendo produtor, local e motivo. Não inclui a anamnese completa nem as fotos. Alterações futuras no MeuAgro não atualizam o calendário. O identificador é estável; o comportamento ao importar novamente depende do aplicativo de calendário. CSV e ICS devem ser baixados pela versão no navegador se o WebView Android não disponibilizar o download.
++
++As exportações são arquivos locais com dados da visita. Somente exporte e compartilhe com os destinatários desejados; o aplicativo não publica links nem envia os arquivos automaticamente.
++
++Validação: `npm run test:visits`, `npm run typecheck`, `npm run build`; teste de navegador em `tests/browser/technical-visits.cjs` usando backend simulado. Validar impressão e importação nos dispositivos e calendários utilizados pela equipe antes de uso geral.

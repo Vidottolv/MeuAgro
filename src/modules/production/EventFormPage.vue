@@ -59,6 +59,10 @@ function submit() {
     >
     <section class="rural-panel">
       <h2>{{ eventId ? 'Editar evento' : 'Novo evento' }}</h2>
+      <p v-if="!eventId">
+        O evento será salvo neste dispositivo e enviado quando houver conexão. Confira o envio em
+        Configurações.
+      </p>
     </section>
     <RequestState :loading="loading" :error="error" @retry="reload"
       ><section v-if="!data.planting || (eventId && !data.event)" class="rural-panel">

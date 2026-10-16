@@ -36,7 +36,10 @@ function selected(event: Event) {
       data-link
       >Voltar à evolução</a
     >
-    <section class="rural-panel"><h2>Adicionar foto</h2></section>
+    <section class="rural-panel">
+      <h2>Adicionar foto</h2>
+      <p>A foto será salva neste dispositivo e enviada quando houver conexão.</p>
+    </section>
     <RequestState :loading="loading" :error="error" @retry="reload"
       ><section v-if="!data" class="rural-panel"><h3>Plantio não encontrado</h3></section>
       <section v-else-if="data.deleted_at" class="rural-panel"><h3>Plantio arquivado</h3></section>

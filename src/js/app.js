@@ -4,6 +4,8 @@ import { supabase } from './supabase.js';
 import {hasAuthCallback} from '../services/authCallbackService.js';
 import {completeAuthCallback} from '../services/authCallbackRouter.js';
 import { Capacitor } from '@capacitor/core';
+import { initializeOffline, syncOffline } from '../offline/runtime.js';
+initializeOffline(supabase);
 let processingAuthCallback = false;
 import {
   initializeRouter,
@@ -52,6 +54,7 @@ onAuthStateChange((event) => {
       event ===
       'SIGNED_IN'
     ) {
+      void syncOffline().catch(() => {});
       void syncHarvestNotifications()
         .catch(
           (error) => {
@@ -104,6 +107,9 @@ onAuthStateChange((event) => {
 });
 
 async function startApp() {
+  if (import.meta.env.PROD && !Capacitor.isNativePlatform() && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => console.warn('Não foi possível preparar a abertura offline.'));
+  }
   if (!Capacitor.isNativePlatform() && hasAuthCallback(window.location.href)) {
     processingAuthCallback = true;
     let route;

@@ -42,6 +42,11 @@ export async function renderManagement({ session }) {
   const { navigate } = await import('../../js/router.js');
   return mount(session, Page, { onNavigate: (path) => navigate(path) }, 'Gestão da empresa');
 }
+export async function renderCompanyTeam({ session }) {
+  const { default: Page } = await import('./CompanyTeamPage.vue');
+  const { navigate } = await import('../../js/router.js');
+  return mount(session, Page, { onNavigate: path => navigate(path) }, 'Gerentes e representantes');
+}
 export async function renderManagementWorkspace({ session }) {
   const { default: Page } = await import('./ManagementWorkspace.vue');
   return mount(session, Page, {}, 'Acompanhamento interno');

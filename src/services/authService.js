@@ -1,101 +1,91 @@
 import { supabase } from '../js/supabase.js';
+import {
+  isOnline,
+  getOfflineSession,
+  rememberOfflineSession,
+  offlineEngine,
+} from '../offline/runtime.js';
 
 import { getAuthRedirectUrl } from './authRedirectService.js';
 
 function requireSupabase() {
   if (!supabase) {
-    throw new Error(
-      'O Supabase não foi inicializado. Verifique o arquivo .env.',
-    );
+    throw new Error('O Supabase não foi inicializado. Verifique o arquivo .env.');
   }
 
   return supabase;
 }
 
-export async function signUp({
-  fullName,
-  email,
-  password,
-}) {
+export async function signUp({ fullName, email, password }) {
   const client = requireSupabase();
 
-  const { data, error } =
-    await client.auth.signUp({
-      email: email.trim().toLowerCase(),
-      password,
-      options: {
-        emailRedirectTo:
-          getAuthRedirectUrl('confirmation'),
-        data: {
-          full_name: fullName.trim(),
-        },
+  const { data, error } = await client.auth.signUp({
+    email: email.trim().toLowerCase(),
+    password,
+    options: {
+      emailRedirectTo: getAuthRedirectUrl('confirmation'),
+      data: {
+        full_name: fullName.trim(),
       },
-    });
+    },
+  });
 
   if (error) throw error;
   return data;
 }
 
-export async function signIn({
-  email,
-  password,
-}) {
+export async function signIn({ email, password }) {
   const client = requireSupabase();
 
-  const { data, error } =
-    await client.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
+  const { data, error } = await client.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  });
 
   if (error) throw error;
   return data;
 }
 
 export async function signOut() {
+  const pending = await offlineEngine.operations();
+  if (pending.length)
+    throw new Error(
+      'Há registros aguardando envio neste dispositivo. Sincronize antes de sair para preservar seus dados de campo.',
+    );
   const client = requireSupabase();
-  const {disableTradePush}=await import("./tradePushService.js");
-  await disableTradePush({forget:false});
+  const { disableTradePush } = await import('./tradePushService.js');
+  await disableTradePush({ forget: false });
 
-  const { error } =
-    await client.auth.signOut();
+  const { error } = await client.auth.signOut();
 
   if (error) throw error;
+  rememberOfflineSession(null);
 }
 
-export async function requestPasswordReset(
-  email,
-) {
+export async function requestPasswordReset(email) {
   const client = requireSupabase();
 
-  const { data, error } =
-    await client.auth.resetPasswordForEmail(
-      email.trim().toLowerCase(),
-      {
-        redirectTo:
-          getAuthRedirectUrl('recovery'),
-      },
-    );
+  const { data, error } = await client.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: getAuthRedirectUrl('recovery'),
+  });
 
   if (error) throw error;
   return data;
 }
 
-export async function updatePassword(
-  password,
-) {
+export async function updatePassword(password) {
   const client = requireSupabase();
 
-  const { data, error } =
-    await client.auth.updateUser({
-      password,
-    });
+  const { data, error } = await client.auth.updateUser({
+    password,
+  });
 
   if (error) throw error;
   return data;
 }
 
 export async function getSession() {
+  if (!isOnline()) return getOfflineSession();
   const client = requireSupabase();
 
   const {
@@ -104,10 +94,12 @@ export async function getSession() {
   } = await client.auth.getSession();
 
   if (error) throw error;
+  rememberOfflineSession(session);
   return session;
 }
 
 export async function getCurrentUser() {
+  if (!isOnline()) return getOfflineSession()?.user || null;
   const client = requireSupabase();
 
   const {
@@ -125,32 +117,34 @@ export async function getCurrentProfile() {
 
   if (!user) return null;
 
-  const { data, error } =
-    await client
-      .from('profiles')
-      .select(
-        'id, full_name, phone, avatar_url, onboarding_completed, created_at, updated_at',
-      )
-      .eq('id', user.id)
-      .maybeSingle();
+  const { data, error } = await client
+    .from('profiles')
+    .select('id, full_name, phone, avatar_url, onboarding_completed, created_at, updated_at')
+    .eq('id', user.id)
+    .maybeSingle();
 
   if (error) throw error;
   return data;
 }
 
-export function onAuthStateChange(
-  callback,
-) {
+export function onAuthStateChange(callback) {
   const client = requireSupabase();
-
-  const { data } =
-    client.auth.onAuthStateChange(
-      (event, session) => {
-        callback(event, session);
-      },
-    );
-
+  let subscription;
+  function subscribe() {
+    if (subscription) return;
+    const { data } = client.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') rememberOfflineSession(null);
+      else if (session?.user) rememberOfflineSession(session);
+      callback(event, session);
+    });
+    subscription = data.subscription;
+  }
+  // INITIAL_SESSION asks the SDK to load/refresh its network session. Defer it
+  // during an offline cold start; local navigation uses the saved user snapshot.
+  if (isOnline()) subscribe();
+  else globalThis.addEventListener('online', subscribe, { once: true });
   return () => {
-    data.subscription.unsubscribe();
+    globalThis.removeEventListener('online', subscribe);
+    subscription?.unsubscribe();
   };
 }

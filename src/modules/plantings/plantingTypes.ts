@@ -48,6 +48,7 @@ export interface Links {
   seasons: Choice[];
 }
 export interface PlantingEvent {
+  offline_pending?: boolean;
   id: string;
   title: string;
   event_type: string;

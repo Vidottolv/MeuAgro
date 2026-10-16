@@ -1,3 +1,21 @@
+# Visitas técnicas e anamnese
+
+Leia [VISITAS-TECNICAS.md](VISITAS-TECNICAS.md) para registrar anamnese com fotos, preparar o uso offline e definir o acompanhamento pela empresa. A migração é `supabase/stage_33_technical_visits.sql`.
+
+---
+
+# Gerentes e representantes
+
+Leia [GERENTES.md](GERENTES.md) para ativar a administração da equipe, convidar gerentes e definir acesso a custos e comissões. A migração é `supabase/stage_32_company_team.sql`.
+
+---
+
+# Uso offline — eventos e fotos de campo
+
+Leia [OFFLINE.md](OFFLINE.md) para aplicar a migração no Supabase, preparar os dados do dispositivo e validar a sincronização. Esta etapa adiciona novos eventos e fotos offline; estoque, pedidos, edições e administração continuam exigindo conexão.
+
+---
+
 # Atualização 0.18.0 — Consultor (etapa 1 de 5)
 
 Leia [CONSULTOR_ETAPA_1.md](CONSULTOR_ETAPA_1.md) para instalar a migração e testar empresas e representantes. Consulte [VALIDACAO_0.18.0.md](VALIDACAO_0.18.0.md) para os resultados.

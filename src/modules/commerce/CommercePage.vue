@@ -99,11 +99,12 @@ async function confirm() {
     ><RequestState :loading="loading" :error="error" @retry="reload"
       ><template v-if="data"
         ><section v-if="!data.account?.enabled" class="rural-panel">
-          <h3>Ative seu perfil de consultor</h3>
+          <h3>Ative seu perfil profissional</h3>
+          <p>Use este perfil para atuar por conta própria ou aceitar um convite de gerente ou representante.</p>
           <p>Seu acesso como produtor e seus registros serão mantidos.</p>
           <CommandForm
             :fields="[nameField(session.user.user_metadata?.full_name || '', 'Nome profissional')]"
-            label="Ativar modo consultor"
+            label="Ativar perfil profissional"
             :busy="busy"
             @submit="command.run('enable', $event)"
           />
@@ -260,6 +261,12 @@ async function confirm() {
                   data-link
                   class="button button--secondary"
                   >{{ getAccess(s).owner ? 'Gerenciar cadastro' : 'Ver vínculo' }}</a
+                ><a
+                  v-if="manager(s)"
+                  :href="'/consultor/equipe?seller=' + encodeURIComponent(s.id)"
+                  data-link
+                  class="button button--secondary"
+                  >Gerentes e representantes</a
                 ><a
                   v-if="manager(s)"
                   :href="'/consultor/gestao?seller=' + encodeURIComponent(s.id)"

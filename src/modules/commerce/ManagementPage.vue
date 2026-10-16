@@ -107,6 +107,8 @@ async function submit(action, values) {
         ><section class="rural-panel">
           <p>{{ data.report.owner ? 'Dono da empresa' : 'Gestor' }} • {{ data.company.name }}</p>
           <h2>Uma visão da sua equipe</h2>
+          <a href="/more/visits?team=1" data-link class="button button--secondary">Visitas técnicas da equipe</a>
+          <a :href="'/consultor/equipe?seller=' + encodeURIComponent(data.company.id)" data-link class="button button--secondary">Gerentes e representantes</a>
           <CommandForm
             :fields="[
               select(

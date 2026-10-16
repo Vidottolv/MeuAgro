@@ -71,6 +71,9 @@ function confirm() {
           ><div v-if="gallery.data.value.length" class="rural-grid">
             <article v-for="p in gallery.data.value" :key="p.id" class="rural-card photo-vue-card">
               <h3>{{ day(p) }}</h3>
+              <p v-if="p.offline_pending" role="status">
+                Salva neste dispositivo • aguardando envio
+              </p>
               <button
                 v-if="p.signed_url"
                 type="button"

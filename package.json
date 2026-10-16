@@ -22,7 +22,7 @@
     "test:delivery": "node --test tests/delivery-database.test.mjs",
     "test:sales": "node --test tests/sales-database.test.mjs",
     "test:improvements": "node --test tests/improvements.test.mjs tests/push-dispatch.test.mjs tests/push-client.test.mjs",
-    "test:management": "node --test tests/management.test.mjs tests/management-edge.test.mjs",
+    "test:management": "node --test tests/management.test.mjs tests/management-edge.test.mjs tests/company-team.test.mjs",
     "typecheck": "vue-tsc --noEmit",
     "format:inventory": "prettier --write \"src/modules/inventory/**/*.{vue,ts,js,css}\"",
     "test:inventory-vue": "node --test tests/inventory-vue-form.test.mjs tests/inventory-vue-detail.test.mjs tests/inventory-vue-lots.test.mjs tests/inventory-vue-transactions.test.mjs",
@@ -34,7 +34,9 @@
     "format:plantings": "prettier --write \"src/modules/plantings/**/*.{vue,ts,js,css}\"",
     "test:production-vue": "node --test tests/production-vue.test.mjs",
     "format:production": "prettier --write \"src/modules/production/**/*.{vue,ts,js,css}\"",
-    "test:v035": "node --test tests/v035-workflows.test.mjs"
+    "test:v035": "node --test tests/v035-workflows.test.mjs",
+    "test:offline": "node --test tests/offline.test.mjs tests/offline-database.test.mjs",
+    "test:visits": "node --test tests/technical-visits.test.mjs tests/offline.test.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.1",
@@ -52,9 +54,10 @@
     "@capacitor/cli": "8.5.1",
     "@electric-sql/pglite": "0.5.8",
     "@vitejs/plugin-vue": "5.2.4",
+    "fake-indexeddb": "^6.2.5",
     "prettier": "3.9.8",
     "typescript": "5.9.3",
-    "vite": "6.4.3",
+    "vite": "^6.4.3",
     "vue-tsc": "3.3.11"
   },
   "engines": {
