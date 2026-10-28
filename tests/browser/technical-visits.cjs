@@ -186,6 +186,24 @@ const server = createServer(async (req, res) => {
       ),
     });
     await page.getByLabel('Legenda da foto 1', { exact: true }).fill('Folha com manchas');
+    await page.getByRole('button', { name: 'Salvar rascunho agora', exact: true }).click();
+    await page.getByText(/Rascunho salvo neste dispositivo em/).waitFor();
+    await page.reload();
+    await page.getByRole('button', { name: 'Continuar rascunho', exact: true }).click();
+    assert.equal(await page.locator('#visit-producer').inputValue(), 'Produtor João');
+    assert.equal(
+      await page.locator('#visit-symptoms').inputValue(),
+      'Lesões nas folhas do talhão norte.',
+    );
+    assert.equal(
+      await page.getByLabel('Legenda da foto 1', { exact: true }).inputValue(),
+      'Folha com manchas',
+    );
+    assert.equal(
+      await page.getByRole('img', { name: 'Prévia da foto anexada', exact: true }).count(),
+      1,
+    );
+    console.log('PASS: draft fields, photo and caption recovered after offline reload');
     await page.getByRole('button', { name: 'Registrar anamnese', exact: true }).click();
     await page.getByRole('heading', { name: 'Ficha de visita técnica', exact: true }).waitFor();
     await page.getByText('Salva neste dispositivo • aguardando envio', { exact: true }).waitFor();

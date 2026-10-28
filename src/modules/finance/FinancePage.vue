@@ -49,6 +49,11 @@ watch(data, () => (page.value = 1));
 <template>
   <div class="rural-vue">
     <h2>Custos, receitas e resultados</h2>
+    <a href="/more/receivables" data-link class="button button--secondary">Contas a receber</a>
+    <a href="/more/cashflow" data-link class="button button--secondary">Fluxo de caixa registrado</a>
+    <a href="/more/budgets" data-link class="button button--secondary">Planejamento e orçamento</a>
+    <a href="/more/costs" data-link class="button button--secondary">Ver resultado ampliado com despesas rateadas</a>
+    <a href="/more/expenses" data-link class="button button--secondary">Gerenciar despesas operacionais e pagamentos</a>
     <p>
       Resultado estimado a partir dos insumos consumidos e das vendas registradas. Não inclui outros
       custos da atividade.

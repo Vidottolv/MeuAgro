@@ -1,7 +1,7 @@
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 import { loadTrade, tradeCommand, tradeError, money } from '../../services/tradeService.js';
-import { useResource } from '../inventory/shared/useResource';
+import { useSensitiveResource as useResource } from '../shared/useSensitiveResource';
 import { useCommand } from './useCommand';
 import { commandPayload } from './tradeModel';
 import RuralDialog from '../properties/components/RuralDialog.vue';
@@ -24,6 +24,16 @@ const command = useCommand(
 const versions = reactive({}),
   pending = ref(null),
   validation = ref('');
+watch(
+  data,
+  (value) => {
+    if (!value) {
+      pending.value = null;
+      validation.value = '';
+    }
+  },
+  { flush: 'sync' },
+);
 const busy = computed(() => command.busy.value || command.committed.value || loading.value);
 const confirmations = {
   confirm_receipt: [

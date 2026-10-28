@@ -71,7 +71,7 @@ test('retry after response loss keeps the same operation ID and never drops pend
   await f.engine.sync();
   assert.equal((await f.engine.operations())[0].error, 'Conexão perdida após gravar');
   fail = false;
-  await f.engine.sync();
+  await f.engine.sync({manual:true});
   assert.deepEqual(seen, ['event-1', 'event-1']);
   assert.equal(committed.size, 1);
   assert.equal((await f.engine.operations()).length, 0);

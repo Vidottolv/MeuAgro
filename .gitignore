@@ -6,7 +6,7 @@ dist/
 .DS_Store
 .vscode/
 .idea/
-.patch
+*.patch
 
 # Capacitor / Android
 android/.gradle/
@@ -15,6 +15,7 @@ android/app/build/
 android/build/
 *.jks
 *.keystore
+release-artifacts/
 
 validation-artifacts/
 

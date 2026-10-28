@@ -158,6 +158,90 @@ const privateRoute = (render) => ({
 });
 
 const routes = {
+  '/more/operations': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/operations/OperationsPage.vue');
+    const app=withShell({session,title:'Diagnóstico e privacidade',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/operations-admin': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/operations/OperationsPage.vue');
+    const app=withShell({session,title:'Operação do MeuAgro',activeNav:'more'})(Page,{adminMode:true});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/farm-workflow': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/production/FarmWorkflowPage.vue');
+    const app=withShell({session,title:'Conferência agrícola',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/receivables': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/finance/ReceivablesPage.vue');
+    const app=withShell({session,title:'Contas a receber',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/cashflow': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/finance/CashFlowPage.vue');
+    const app=withShell({session,title:'Fluxo de caixa registrado',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/budgets': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/planning/BudgetsPage.vue');
+    const app=withShell({session,title:'Planejamento da safra',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/procurement': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/planning/ProcurementPage.vue');
+    const app=withShell({session,title:'Reposição planejada',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/weather': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/weather/WeatherPage.vue');
+    const app=withShell({session,title:'Clima e chuva',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/platform-admin': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/onboarding/PlatformAdminPage.vue');
+    const app=withShell({session,title:'Administração do MeuAgro',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/account-plan': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/onboarding/AccountPlanPage.vue');
+    const app=withShell({session,title:'Conta e plano',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/costs': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/finance/OperatingCostsPage.vue');
+    const app=withShell({session,title:'Resultado ampliado',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/expenses': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/finance/ExpensesPage.vue');
+    const app=withShell({session,title:'Despesas operacionais',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/tasks': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/tasks/TasksPage.vue');
+    const app=withShell({session,title:'Agenda técnica',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
+  '/more/satellite': privateRoute(async ({session}) => {
+    const {withShell}=await import('../modules/shared/mountShell.js');
+    const {default:Page}=await import('../modules/satellite/SatellitePage.vue');
+    const app=withShell({session,title:'Mapas e satélite',activeNav:'more'})(Page,{});
+    app.mount('#app');return ()=>app.unmount();
+  }),
   '/more/sharing': privateRoute(async ({session}) => {
     const {withShell}=await import('../modules/shared/mountShell.js');
     const {default:Page}=await import('../modules/sharing/SharingPage.vue');

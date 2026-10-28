@@ -8,7 +8,7 @@ import {
   managementError,
 } from '../../services/managementService.js';
 import { money } from '../../services/tradeService.js';
-import { useResource } from '../inventory/shared/useResource';
+import { useSensitiveResource as useResource } from '../shared/useSensitiveResource';
 import { useCommand } from './useCommand';
 import { field, select } from './tradeModel';
 import CommandForm from './CommandForm.vue';

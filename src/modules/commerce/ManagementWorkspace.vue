@@ -5,7 +5,7 @@ import {
   managementCommand,
   managementError,
 } from '../../services/managementService.js';
-import { useResource } from '../inventory/shared/useResource';
+import { useSensitiveResource as useResource } from '../shared/useSensitiveResource';
 import { useCommand } from './useCommand';
 import { field, text, when } from './tradeModel';
 import { approvalStatus, localTime } from './managementModel';

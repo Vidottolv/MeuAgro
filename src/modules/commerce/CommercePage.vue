@@ -1,12 +1,12 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   loadCommerce,
   commerceCommand,
   commerceError,
   sellerAccess,
 } from '../../services/commerceService.js';
-import { useResource } from '../inventory/shared/useResource';
+import { useSensitiveResource as useResource } from '../shared/useSensitiveResource';
 import { useCommand } from './useCommand';
 import RequestState from '../properties/components/RequestState.vue';
 import RuralDialog from '../properties/components/RuralDialog.vue';
@@ -28,6 +28,16 @@ const command = useCommand(
 const busy = computed(() => command.busy.value || command.committed.value);
 const pending = ref(null),
   copyMessage = ref('');
+watch(
+  data,
+  (value) => {
+    if (!value) {
+      pending.value = null;
+      copyMessage.value = '';
+    }
+  },
+  { flush: 'sync' },
+);
 const seller = computed(() => data.value?.sellers.find((s) => s.id === companyId));
 const access = computed(() =>
   seller.value ? sellerAccess(seller.value, data.value.memberships, userId) : null,
@@ -100,7 +110,10 @@ async function confirm() {
       ><template v-if="data"
         ><section v-if="!data.account?.enabled" class="rural-panel">
           <h3>Ative seu perfil profissional</h3>
-          <p>Use este perfil para atuar por conta própria ou aceitar um convite de gerente ou representante.</p>
+          <p>
+            Use este perfil para atuar por conta própria ou aceitar um convite de gerente ou
+            representante.
+          </p>
           <p>Seu acesso como produtor e seus registros serão mantidos.</p>
           <CommandForm
             :fields="[nameField(session.user.user_metadata?.full_name || '', 'Nome profissional')]"

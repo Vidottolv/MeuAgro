@@ -13,7 +13,10 @@
     "android:run": "npm run android:sync && npx cap run android",
     "android:doctor": "node scripts/android-doctor.mjs",
     "android:apk": "npm run android:sync && node scripts/android-gradle.mjs assembleDebug",
-    "android:aab": "npm run android:sync && node scripts/android-gradle.mjs bundleRelease",
+    "android:aab": "node scripts/android-release.mjs aab",
+    "android:apk:release": "node scripts/android-release.mjs apk",
+    "android:release:check": "node scripts/android-release.mjs check",
+    "test:android-release": "node --test tests/android-release.test.mjs",
     "test:auth": "node --test tests/auth.test.mjs tests/oauth.test.mjs",
     "test:commerce": "node --test tests/commerce-database.test.mjs",
     "test": "npm run test:auth && npm run test:commerce && npm run test:trade && npm run test:orders && npm run test:delivery && npm run test:sales && npm run test:improvements && npm run test:management && npm run test:inventory-vue && npm run test:properties-vue && npm run test:seasons-vue && npm run test:plantings-vue && npm run test:production-vue && npm run test:v035",
@@ -36,7 +39,8 @@
     "format:production": "prettier --write \"src/modules/production/**/*.{vue,ts,js,css}\"",
     "test:v035": "node --test tests/v035-workflows.test.mjs",
     "test:offline": "node --test tests/offline.test.mjs tests/offline-database.test.mjs",
-    "test:visits": "node --test tests/technical-visits.test.mjs tests/offline.test.mjs"
+    "test:visits": "node --test tests/technical-visits.test.mjs tests/offline.test.mjs",
+    "test:satellite": "node --test tests/satellite.test.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.1",
@@ -48,7 +52,9 @@
     "@capacitor/push-notifications": "8.1.2",
     "@capacitor/splash-screen": "8.0.2",
     "@supabase/supabase-js": "2.116.0",
-    "vue": "3.5.43"
+    "vue": "3.5.43",
+    "leaflet": "1.9.4",
+    "proj4": "2.20.2"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.1",

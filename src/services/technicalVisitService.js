@@ -12,11 +12,11 @@ import { validatePhotoFile } from './photoService.js';
 import { visitPayload } from '../modules/visits/visitModel.js';
 import { getOfflineSession } from '../offline/runtime.js';
 const fields =
-  'id,author_id,technician_name,seller_id,property_id,area_id,crop_id,production_cycle_id,producer_name,site_name,area_name,crop_name,visited_at,next_visit,priority,anamnesis,created_at';
+  'id,author_id,technician_name,seller_id,property_id,area_id,crop_id,production_cycle_id,producer_name,site_name,area_name,crop_name,visited_at,next_visit,priority,anamnesis,satellite_reference,field_observations,created_at';
 const photoFields = 'id,visit_id,author_id,storage_path,description,created_at';
 export function visitError(error) {
-  return ['42P01', 'PGRST205', 'PGRST202', '42883'].includes(error?.code)
-    ? 'As visitas técnicas precisam ser instaladas no Supabase. Execute a migração da etapa 33.'
+  return ['42P01', 'PGRST205', 'PGRST202', '42883', '42703'].includes(error?.code)
+    ? 'As visitas técnicas precisam ser instaladas no Supabase. Execute as migrações de visitas, incluindo a etapa 41 de evolução das visitas.'
     : error?.message || 'Não foi possível carregar as visitas.';
 }
 export async function listTechnicalVisits(team = false) {
@@ -65,7 +65,7 @@ function makePhoto(user, visitId, attachment) {
     created_at: new Date().toISOString(),
   };
 }
-export async function saveTechnicalVisit(form, attachments = []) {
+export async function saveTechnicalVisit(form, attachments = [], draft = null) {
   const user = offlineUserId();
   if (!user) throw Error('Entre na sua conta antes de registrar a visita.');
   if (attachments.length > 5) throw Error('Adicione até cinco fotos por visita.');
@@ -93,6 +93,7 @@ export async function saveTechnicalVisit(form, attachments = []) {
       ...photos.map((row) => ({ table: 'technical_visit_photos', row })),
     ],
     photos.map((photo, i) => [`${user}:photo:${photo.storage_path}`, attachments[i].file]),
+    draft,
   );
   void syncOffline().catch(() => {});
   return id;
@@ -183,6 +184,8 @@ export async function technicalVisitCompanies() {
   return companies;
 }
 export async function prepareTechnicalVisits() {
+  const { listVisitTemplates } = await import('./visitTemplateService.js');
+  await listVisitTemplates(true);
   const visits = await listTechnicalVisits();
   if (visits.length >= 200)
     throw Error(

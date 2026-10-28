@@ -9,7 +9,7 @@ import {
   salesError,
 } from '../../services/salesResultService.js';
 import { money } from '../../services/tradeService.js';
-import { useResource } from '../inventory/shared/useResource';
+import { useSensitiveResource as useResource } from '../shared/useSensitiveResource';
 import { useCommand } from './useCommand';
 import { field, select, number, deliveryStates, when } from './tradeModel';
 import CommandForm from './CommandForm.vue';
@@ -109,8 +109,9 @@ const metrics = computed(() => {
       ['Vendas recebidas', money(t.sales_total)],
       ['Pedidos recebidos', t.received_count],
       ['Em andamento', t.pending_count + ' • ' + money(t.pending_total)],
-      ['Comissões das vendas recebidas', amount(t.commission_total)],
     ];
+  if (r.commission_visible !== false)
+    rows.push(['Comissões das vendas recebidas', amount(t.commission_total)]);
   if (r.owner)
     rows.push(
       ['Custos informados (sem comissão)', amount(t.cost_total)],
@@ -187,7 +188,15 @@ const metrics = computed(() => {
         </section></template
       ><template v-else
         ><section class="rural-panel">
-          <h2>{{ data.report.owner ? 'Resultados do vendedor' : 'Minhas vendas e comissões' }}</h2>
+          <h2>
+            {{
+              data.report.owner
+                ? 'Resultados do vendedor'
+                : data.report.commission_visible === false
+                  ? 'Minhas vendas'
+                  : 'Minhas vendas e comissões'
+            }}
+          </h2>
           <CommandForm
             :fields="[
               select(
@@ -211,6 +220,10 @@ const metrics = computed(() => {
             restritos ao responsável.
           </p>
         </section>
+        <p v-if="data.report.commission_visible === false">
+          As comissões estão ocultas porque seu vínculo de gerente não possui autorização
+          financeira. Solicite a revisão ao responsável pela empresa.
+        </p>
         <div class="rural-grid">
           <article v-for="[label, value] in metrics" :key="label" class="rural-card">
             <h3>{{ label }}</h3>
@@ -277,7 +290,7 @@ const metrics = computed(() => {
             <h4>{{ o.buyer_name }} • {{ money(o.total) }}</h4>
             <p>{{ when(o.date) }} • {{ deliveryStates[o.state] }}</p>
             <p>Consultor no aceite: {{ o.agent_name }}</p>
-            <p>
+            <p v-if="data.report.commission_visible !== false">
               Comissão {{ o.state === 'received' ? 'apurada' : 'prevista' }}:
               {{ amount(o.commission_amount) }}
               {{ o.commission_percent != null ? '(' + o.commission_percent + '%)' : '' }}

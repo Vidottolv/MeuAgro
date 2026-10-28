@@ -116,7 +116,10 @@ function finish() {
       title="Concluir a colheita do plantio?"
       :busy="mutation.busy.value"
       @close="confirm = false"
-      ><p>O plantio será marcado como colhido, usando a data desta colheita.</p>
+      ><p>
+        O plantio será marcado como colhido, usando a data mais recente de todas as suas colheitas
+        registradas. Não será possível adicionar novas colheitas depois do encerramento.
+      </p>
       <p v-if="mutation.error.value" role="alert">{{ mutation.error.value }}</p>
       <div class="rural-actions">
         <button

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch, onScopeDispose } from 'vue';
+import { computed, reactive, ref, watch, onScopeDispose, onMounted, nextTick } from 'vue';
 import { useResource } from '../inventory/shared/useResource';
 import { useMutation } from '../production/useMutation';
 import {
@@ -15,11 +15,19 @@ import { listActiveCrops } from '../../services/cropService.js';
 import { listProductionCycles } from '../../services/productionCycleService.js';
 import { isNativeCameraPlatform, takePhotoWithCamera } from '../../services/cameraService.js';
 import { validatePhotoFile } from '../../services/photoService.js';
-import { offlineUserId, isOnline } from '../../offline/runtime.js';
+import { offlineUserId, offlineStore, isOnline } from '../../offline/runtime.js';
+import { createVisitDraft } from './visitDraft.js';
 import { useOffline } from '../../offline/useOffline.js';
 import { anamnesisFields, priorities } from './visitModel.js';
-import { matchesReturn, visitsCsv, returnCalendar, downloadVisitFile } from './visitFollowup.js';
+import { visitsCsv, returnCalendar, downloadVisitFile } from './visitFollowup.js';
 import VisitReport from './VisitReport.vue';
+import VisitTemplatePicker from './VisitTemplatePicker.vue';
+import VisitObservations from './VisitObservations.vue';
+import VisitMonitoring from './VisitMonitoring.vue';
+import { visitMatches } from './visitMonitoring.js';
+import { observationsCsv, visitObservations } from './visitObservations.js';
+import TaskBoard from '../tasks/TaskBoard.vue';
+import VisitSatellite from './VisitSatellite.vue';
 import { toDateTimeLocalValue } from '../../js/html.js';
 import RequestState from '../properties/components/RequestState.vue';
 import RuralDialog from '../properties/components/RuralDialog.vue';
@@ -31,6 +39,9 @@ const q = new URLSearchParams(location.search),
 const { status } = useOffline();
 const team = ref(q.has('team')),
   search = ref(''),
+  dateFrom = ref(''),
+  dateTo = ref(''),
+  syncFilter = ref(''),
   priority = ref(''),
   returnFilter = ref(''),
   reportOpen = ref(false),
@@ -47,7 +58,10 @@ const options = useResource(async () => {
   ]);
   return { properties, crops, cycles, companies };
 }, null);
+const taskBoardRef = ref(null);
 const f = reactive({
+  field_observations: [],
+  satellite_reference: null,
   producer_name: '',
   site_name: '',
   area_name: '',
@@ -90,21 +104,130 @@ const mutation = useMutation(),
   attachments = ref([]),
   previewed = ref(null),
   picking = ref(false);
-const filterText = (value) =>
-  (value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase('pt-BR');
-const filtered = computed(() =>
-  visits.data.value.filter(
-    (v) =>
-      (!priority.value || v.priority === priority.value) &&
-      matchesReturn(v, returnFilter.value) &&
-      filterText(
-        [v.producer_name, v.site_name, v.area_name, v.crop_name, v.anamnesis.reason].join(' '),
-      ).includes(filterText(search.value)),
-  ),
+const drafts = createVisitDraft({ store: offlineStore, currentUser: offlineUserId });
+const draftReady = ref(!creating),
+  draftFound = ref(null),
+  draftError = ref(''),
+  draftSaved = ref(''),
+  draftDirty = ref(false),
+  draftSaving = ref(false),
+  discardOpen = ref(false);
+const initialForm = JSON.parse(JSON.stringify(f));
+let draftTimer,
+  draftVersion = 0,
+  draftFinalized = false,
+  finalizing = false;
+async function loadDraft() {
+  draftError.value = '';
+  try {
+    draftFound.value = await drafts.load();
+    draftReady.value = true;
+  } catch (error) {
+    draftError.value = error.message;
+  }
+}
+onMounted(() => {
+  if (creating) void loadDraft();
+});
+function changedDraft() {
+  if (!creating || !draftReady.value || draftFound.value || finalizing || draftFinalized) return;
+  draftDirty.value = true;
+  ++draftVersion;
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => void persistDraft(), 400);
+}
+watch([f, attachments], changedDraft, { deep: true });
+async function persistDraft() {
+  if (!draftReady.value || draftFound.value || finalizing || draftFinalized) return;
+  clearTimeout(draftTimer);
+  const version = draftVersion;
+  draftSaving.value = true;
+  try {
+    const saved = await drafts.save(f, attachments.value);
+    draftSaved.value = saved.updated_at;
+    if (version === draftVersion) draftDirty.value = false;
+    draftError.value = '';
+  } catch (error) {
+    draftError.value = error.message;
+  } finally {
+    draftSaving.value = false;
+  }
+}
+async function restoreDraft() {
+  const saved = draftFound.value;
+  if (!saved) return;
+  draftReady.value = false;
+  try {
+    Object.assign(f, saved.form);
+    attachments.value = saved.attachments.map((item) => ({
+      ...item,
+      preview: URL.createObjectURL(item.file),
+    }));
+    draftSaved.value = saved.updated_at;
+    draftFound.value = null;
+    await nextTick();
+  } catch (error) {
+    draftError.value = 'Não foi possível recuperar o rascunho: ' + error.message;
+  } finally {
+    draftReady.value = true;
+  }
+}
+async function discardDraft() {
+  draftReady.value = false;
+  clearTimeout(draftTimer);
+  try {
+    await drafts.discard();
+    attachments.value.forEach((a) => URL.revokeObjectURL(a.preview));
+    attachments.value = [];
+    Object.assign(f, JSON.parse(JSON.stringify(initialForm)));
+    draftFound.value = null;
+    draftDirty.value = false;
+    draftSaved.value = '';
+    draftError.value = '';
+    discardOpen.value = false;
+    await nextTick();
+  } catch (error) {
+    draftError.value = error.message;
+  } finally {
+    draftReady.value = true;
+  }
+}
+function flushDraft() {
+  if (creating && draftDirty.value && !finalizing && !draftFinalized) void persistDraft();
+}
+onMounted(() => {
+  window.addEventListener('pagehide', flushDraft);
+});
+onScopeDispose(() => {
+  clearTimeout(draftTimer);
+  flushDraft();
+  window.removeEventListener('pagehide', flushDraft);
+});
+const invalidPeriod = computed(
+  () => !!(dateFrom.value && dateTo.value && dateFrom.value > dateTo.value),
 );
+const filtered = computed(() =>
+  invalidPeriod.value
+    ? []
+    : visits.data.value.filter((v) =>
+        visitMatches(v, {
+          search: search.value,
+          priority: priority.value,
+          returnFilter: returnFilter.value,
+          from: dateFrom.value,
+          to: dateTo.value,
+          sync: syncFilter.value,
+        }),
+      ),
+);
+function resetFilters() {
+  search.value = '';
+  priority.value = '';
+  returnFilter.value = '';
+  dateFrom.value = '';
+  dateTo.value = '';
+  syncFilter.value = '';
+}
 const when = (value) => new Date(value).toLocaleString('pt-BR');
 const native = isNativeCameraPlatform();
 function exportCsv() {
@@ -189,6 +312,8 @@ function removeAttachment(index) {
 onScopeDispose(() => attachments.value.forEach((a) => URL.revokeObjectURL(a.preview)));
 function submit() {
   if (
+    !draftReady.value ||
+    draftFound.value ||
     options.loading.value ||
     options.error.value ||
     areas.loading.value ||
@@ -197,7 +322,39 @@ function submit() {
   )
     return;
   void mutation.run(
-    () => saveTechnicalVisit(f, attachments.value),
+    async () => {
+      finalizing = true;
+      clearTimeout(draftTimer);
+      try {
+        visitObservations(f.field_observations, f.property_id, f.visited_at.slice(0, 10));
+        if (
+          f.field_observations.some(
+            (item) => item.area_id && !areas.data.value.some((area) => area.id === item.area_id),
+          )
+        )
+          throw Error(
+            'Confira os talhões das observações: todos devem pertencer à propriedade selecionada e estar disponíveis nesta conta.',
+          );
+        if (
+          f.field_observations.some(
+            (item) =>
+              item.crop_id && !options.data.value.crops.some((crop) => crop.id === item.crop_id),
+          )
+        )
+          throw Error('Confira as culturas vinculadas às observações.');
+        await drafts.save(f, attachments.value);
+        const guard = await drafts.seal();
+        const id = await saveTechnicalVisit(f, attachments.value, guard);
+        draftFinalized = true;
+        draftDirty.value = false;
+        return id;
+      } catch (error) {
+        drafts.resume();
+        throw error;
+      } finally {
+        finalizing = false;
+      }
+    },
     (id) => emit('navigate', '/more/visits?id=' + encodeURIComponent(id)),
   );
 }
@@ -241,12 +398,88 @@ async function saveMorePhotos() {
       >
     </header>
     <template v-if="creating">
+      <section class="rural-panel">
+        <h3>Rascunho neste dispositivo</h3>
+        <p>
+          Um rascunho por conta e dispositivo, com campos, fotos e legendas. Não é enviado ao
+          Supabase nem compartilhado. Limpar os dados do aplicativo remove o rascunho.
+        </p>
+        <p v-if="!draftReady">Carregando rascunho…</p>
+        <template v-if="draftFound">
+          <p>
+            Há uma visita em preenchimento:
+            {{ draftFound.form.producer_name || 'Produtor não informado' }} •
+            {{ draftFound.form.site_name || 'Local não informado' }}. Salva em
+            {{ when(draftFound.updated_at) }}.
+          </p>
+          <button type="button" class="button button--primary" @click="restoreDraft">
+            Continuar rascunho
+          </button>
+        </template>
+        <p v-else-if="draftSaving" role="status">Salvando rascunho…</p>
+        <p v-else-if="draftDirty" role="status">Alterações ainda não salvas.</p>
+        <p v-else-if="draftSaved" role="status">
+          Rascunho salvo neste dispositivo em {{ when(draftSaved) }}.
+        </p>
+        <p v-if="draftError" role="alert">{{ draftError }}</p>
+        <button
+          v-if="!draftReady && draftError"
+          type="button"
+          class="button button--secondary"
+          @click="loadDraft"
+        >
+          Tentar carregar rascunho
+        </button>
+        <button
+          v-if="draftReady && !draftFound"
+          type="button"
+          class="button button--secondary"
+          :disabled="draftSaving || mutation.busy.value"
+          @click="persistDraft"
+        >
+          Salvar rascunho agora
+        </button>
+        <button
+          v-if="draftReady && (draftFound || draftSaved || draftDirty)"
+          type="button"
+          class="button button--secondary"
+          :disabled="mutation.busy.value || draftSaving"
+          @click="discardOpen = true"
+        >
+          Descartar rascunho
+        </button>
+      </section>
+      <RuralDialog
+        v-if="discardOpen"
+        title="Descartar rascunho?"
+        :busy="!draftReady"
+        @close="discardOpen = false"
+        ><p>
+          Os campos e fotos deste rascunho serão removidos deste dispositivo. Fichas já registradas
+          permanecem no histórico.
+        </p>
+        <button
+          type="button"
+          class="button button--primary"
+          :disabled="!draftReady"
+          @click="discardDraft"
+        >
+          Confirmar descarte</button
+        ><button type="button" class="button button--secondary" @click="discardOpen = false">
+          Cancelar
+        </button></RuralDialog
+      >
       <RequestState
         :loading="options.loading.value"
         :error="options.error.value"
         @retry="options.reload"
       >
-        <form v-if="options.data.value" class="rural-panel" @submit.prevent="submit">
+        <form
+          v-if="options.data.value"
+          :inert="!draftReady || !!draftFound"
+          class="rural-panel"
+          @submit.prevent="submit"
+        >
           <p>
             A ficha e suas fotos ficam salvas neste dispositivo até a sincronização. Revise antes de
             registrar: fichas salvas preservam o histórico e não são sobrescritas.
@@ -350,6 +583,12 @@ async function saveMorePhotos() {
                 </option>
               </select>
             </div>
+            <VisitSatellite
+              v-model="f.satellite_reference"
+              :property-id="f.property_id"
+              :area-id="f.area_id"
+            />
+            <VisitTemplatePicker v-model="f.anamnesis" />
             <h3>Anamnese da visita</h3>
             <div v-for="[key, label] in anamnesisFields" :key="key" class="field">
               <label :for="'visit-' + key">{{ label }}{{ key === 'reason' ? ' *' : '' }}</label
@@ -361,6 +600,12 @@ async function saveMorePhotos() {
                 rows="3"
               />
             </div>
+            <VisitObservations
+              v-model="f.field_observations"
+              :property-id="f.property_id"
+              :areas="areas.data.value"
+              :crops="options.data.value.crops"
+            />
             <div class="field">
               <label for="visit-priority">Prioridade do acompanhamento</label
               ><select id="visit-priority" v-model="f.priority">
@@ -492,11 +737,44 @@ async function saveMorePhotos() {
               >Ver plantio vinculado</a
             >
           </section>
+          <section class="rural-panel">
+            <TaskBoard
+              ref="taskBoardRef"
+              :visit-id="selected.id"
+              :pending="!!selected.offline_pending"
+            />
+          </section>
+          <section v-if="selected.field_observations?.length" class="rural-panel">
+            <VisitObservations
+              :model-value="selected.field_observations"
+              readonly
+              :can-task="!selected.offline_pending && status.online"
+              @task="(observation) => taskBoardRef?.createFromObservation(observation)"
+            />
+            <button
+              type="button"
+              class="button button--secondary"
+              @click="
+                downloadVisitFile(
+                  observationsCsv(selected),
+                  'text/csv;charset=utf-8',
+                  'meuagro-observacoes-visita.csv',
+                )
+              "
+            >
+              Exportar observações desta visita (CSV)
+            </button>
+          </section>
           <section v-for="[key, label] in anamnesisFields" :key="key" class="rural-panel">
             <h3>{{ label }}</h3>
             <p class="visit-text">{{ selected.anamnesis[key] || 'Não informado' }}</p>
           </section>
           <section class="rural-panel">
+            <VisitSatellite
+              v-if="selected.satellite_reference"
+              :model-value="selected.satellite_reference"
+              readonly
+            />
             <h3>Fotos da visita</h3>
             <RequestState
               :loading="gallery.loading.value"
@@ -581,9 +859,30 @@ async function saveMorePhotos() {
           Histórico das 200 visitas mais recentes carregadas, além dos registros locais pendentes.
         </p>
         <div class="field">
-          <label for="visit-search">Buscar produtor, propriedade, talhão, cultura ou motivo</label
+          <label for="visit-search"
+            >Buscar produtor, propriedade, talhão, cultura, motivo ou observações</label
           ><input id="visit-search" v-model="search" type="search" />
         </div>
+        <div class="field">
+          <label for="visit-date-from">Visitas a partir de</label
+          ><input id="visit-date-from" v-model="dateFrom" type="date" />
+        </div>
+        <div class="field">
+          <label for="visit-date-to">Visitas até</label
+          ><input id="visit-date-to" v-model="dateTo" type="date" />
+        </div>
+        <p v-if="invalidPeriod" role="alert">A data final deve ser igual ou posterior à inicial.</p>
+        <div class="field">
+          <label for="visit-sync-filter">Sincronização</label
+          ><select id="visit-sync-filter" v-model="syncFilter">
+            <option value="">Todas</option>
+            <option value="pending">Aguardando envio</option>
+            <option value="synced">Sincronizadas</option>
+          </select>
+        </div>
+        <button type="button" class="button button--secondary" @click="resetFilters">
+          Limpar filtros
+        </button>
         <div class="field">
           <label for="visit-filter">Filtrar prioridade</label
           ><select id="visit-filter" v-model="priority">
@@ -631,7 +930,8 @@ async function saveMorePhotos() {
         :loading="visits.loading.value"
         :error="visits.error.value"
         @retry="visits.reload"
-        ><section v-if="!filtered.length" class="rural-panel">
+        ><VisitMonitoring :visits="filtered" :team="team" />
+        <section v-if="!filtered.length" class="rural-panel">
           <h3>Nenhuma visita encontrada</h3>
           <p>Registre sua primeira anamnese ou ajuste a busca.</p>
         </section>

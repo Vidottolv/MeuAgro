@@ -1,0 +1,32 @@
+def meuAgroKeystorePath = System.getenv('MEU_AGRO_KEYSTORE_PATH')
+def meuAgroKeystorePassword = System.getenv('MEU_AGRO_KEYSTORE_PASSWORD')
+def meuAgroKeyAlias = System.getenv('MEU_AGRO_KEY_ALIAS')
+def meuAgroKeyPassword = System.getenv('MEU_AGRO_KEY_PASSWORD')
+def meuAgroSigningReady = [meuAgroKeystorePath, meuAgroKeystorePassword, meuAgroKeyAlias, meuAgroKeyPassword].every { it != null && !it.isEmpty() }
+
+if (meuAgroSigningReady) {
+    android {
+        signingConfigs {
+            meuAgroRelease {
+                storeFile file(meuAgroKeystorePath)
+                storePassword meuAgroKeystorePassword
+                keyAlias meuAgroKeyAlias
+                keyPassword meuAgroKeyPassword
+            }
+        }
+        buildTypes {
+            release { signingConfig signingConfigs.meuAgroRelease }
+        }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { it.name.toLowerCase().contains('release') }) {
+        if (!meuAgroSigningReady) {
+            throw new GradleException('Meu Agro: release exige as quatro variáveis MEU_AGRO_KEYSTORE_PATH, MEU_AGRO_KEYSTORE_PASSWORD, MEU_AGRO_KEY_ALIAS e MEU_AGRO_KEY_PASSWORD. Nenhuma senha deve ser gravada no repositório.')
+        }
+        if (!file(meuAgroKeystorePath).isFile()) {
+            throw new GradleException('Meu Agro: arquivo de assinatura não encontrado.')
+        }
+    }
+}

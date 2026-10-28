@@ -1,3 +1,4 @@
+import { validateReleaseVersion } from './android-release-policy.mjs';
 import {
   cp,
   mkdir,
@@ -260,13 +261,13 @@ async function patchAppBuildGradle() {
   gradle =
     gradle.replace(
       /versionCode\s+\d+/,
-      'versionCode 38',
+      `versionCode ${release.versionCode}`,
     );
 
   gradle =
     gradle.replace(
       /versionName\s+["'][^"']+["']/,
-      'versionName "0.35.0"',
+      `versionName "${release.versionName}"`,
     );
 
   await writeFile(
@@ -334,72 +335,11 @@ async function writeStrings() {
 
 
 async function writeSigningGradle() {
-  const content =
-`def meuAgroKeystorePath = System.getenv('MEU_AGRO_KEYSTORE_PATH')
-def meuAgroKeystorePassword = System.getenv('MEU_AGRO_KEYSTORE_PASSWORD')
-def meuAgroKeyAlias = System.getenv('MEU_AGRO_KEY_ALIAS')
-def meuAgroKeyPassword = System.getenv('MEU_AGRO_KEY_PASSWORD')
-
-if (
-    meuAgroKeystorePath &&
-    meuAgroKeystorePassword &&
-    meuAgroKeyAlias &&
-    meuAgroKeyPassword
-) {
-    android {
-        signingConfigs {
-            meuAgroRelease {
-                storeFile file(meuAgroKeystorePath)
-                storePassword meuAgroKeystorePassword
-                keyAlias meuAgroKeyAlias
-                keyPassword meuAgroKeyPassword
-            }
-        }
-
-        buildTypes {
-            release {
-                signingConfig signingConfigs.meuAgroRelease
-            }
-        }
-    }
-
-    logger.lifecycle('Meu Agro: assinatura release configurada por variáveis de ambiente.')
-} else {
-    logger.lifecycle('Meu Agro: assinatura release não configurada; bundleRelease será gerado sem assinatura.')
+  await cp(join(rootDir, 'native', 'android', 'signing.gradle'), signingGradlePath);
+  let appGradle = await readFile(appBuildGradlePath, 'utf8');
+  const applyLine = "apply from: '../meu-agro-signing.gradle'";
+  if (!appGradle.includes(applyLine)) await writeFile(appBuildGradlePath, appGradle.trim() + '\n\n' + applyLine + '\n', 'utf8');
 }
-`;
-
-  await writeFile(
-    signingGradlePath,
-    content,
-    'utf8',
-  );
-
-  let appGradle =
-    await readFile(
-      appBuildGradlePath,
-      'utf8',
-    );
-
-  const applyLine =
-    "apply from: '../meu-agro-signing.gradle'";
-
-  if (
-    !appGradle.includes(
-      applyLine,
-    )
-  ) {
-    appGradle =
-      `${appGradle.trim()}\n\n${applyLine}\n`;
-
-    await writeFile(
-      appBuildGradlePath,
-      appGradle,
-      'utf8',
-    );
-  }
-}
-
 
 async function removeCapacitorResourceConflicts() {
   /*
@@ -541,7 +481,9 @@ async function copyNativeResources() {
   );
 }
 
+let release;
 async function main() {
+  release = validateReleaseVersion(JSON.parse(await readFile(join(rootDir, 'native', 'android', 'release.json'), 'utf8')));
   requireAndroidProject();
 
   await patchManifest();

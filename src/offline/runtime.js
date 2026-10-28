@@ -1,3 +1,4 @@
+import { uploadPendingFile } from './uploadRecovery.js';
 import { createOfflineStore } from './store.js';
 import { createOfflineEngine } from './engine.js';
 import { createCachedFetch } from './readCache.js';
@@ -14,7 +15,9 @@ export async function withFreshOfflineReads(work) {
   if (preparing) throw Error('O preparo já está em andamento neste dispositivo.');
   preparing = true;
   try {
-    return await work();
+    const result = await work();
+    lastCachedRead = null;
+    return result;
   } finally {
     preparing = false;
   }
@@ -68,19 +71,15 @@ export const cachedFetch = createCachedFetch({
   },
   strict: () => preparing,
 });
-async function sameFile(a, b) {
-  if (a.size !== b.size) return false;
-  const digest = async (blob) =>
-    Array.from(
-      new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())),
-    ).join(',');
-  return (await digest(a)) === (await digest(b));
-}
 async function send(operation, active) {
   if (!client || !active()) throw Error('Entre na conta que criou os registros para sincronizar.');
   const { data, error } = await client.auth.getUser();
-  if (error || data.user?.id !== operation.user || !active())
-    throw Error('Entre novamente na conta que criou os registros para sincronizar.');
+  if (error) throw error;
+  if (data.user?.id !== operation.user || !active())
+    throw Object.assign(
+      Error('Entre novamente na conta que criou os registros para sincronizar.'),
+      { code: 'SESSION_REQUIRED' },
+    );
   const visitOperation = ['visit', 'visit_photo'].includes(operation.payload.kind);
   const uploads =
     operation.files ||
@@ -90,23 +89,15 @@ async function send(operation, active) {
     const bucket = client.storage.from(
       visitOperation ? 'meu-agro-visit-photos' : 'meu-agro-photos',
     );
-    const result = await bucket.upload(photo.storage_path, file, {
-      upsert: false,
-      contentType: file.type || 'image/jpeg',
-    });
-    if (result.error) {
-      if (String(result.error.statusCode) !== '409' && result.error.error !== 'Duplicate')
-        throw result.error;
-      const existing = await bucket.download(photo.storage_path);
-      if (existing.error || !(await sameFile(existing.data, file)))
-        throw Error(
-          'O arquivo no servidor difere da foto local. O registro foi preservado para revisão.',
-        );
-    }
+    await uploadPendingFile(bucket, photo, file, active);
   }
   if (!active()) throw Error('A conta mudou. Retome a sincronização na conta original.');
   const result = await client.rpc(
-    visitOperation ? 'sync_visit_operation' : 'sync_field_operation',
+    visitOperation
+      ? operation.payload.visit?.field_observations?.length
+        ? 'sync_visit_workflow_operation'
+        : 'sync_visit_operation'
+      : 'sync_field_operation',
     {
       p_user: operation.user,
       p_operation: operation.id,
@@ -115,10 +106,15 @@ async function send(operation, active) {
   );
   if (result.error) {
     if (['PGRST202', '42883'].includes(result.error.code))
-      throw Error(
-        visitOperation
-          ? 'Instale a migração de visitas técnicas no Supabase para enviar a anamnese. Os dados continuam salvos neste dispositivo.'
-          : 'Instale a migração offline no Supabase para enviar os registros. Eles continuam salvos neste dispositivo.',
+      throw Object.assign(
+        Error(
+          visitOperation
+            ? operation.payload.visit?.field_observations?.length
+              ? 'Instale a etapa 41 no Supabase para enviar as observações. A ficha continua salva neste dispositivo.'
+              : 'Instale a migração de visitas técnicas no Supabase para enviar a anamnese. Os dados continuam salvos neste dispositivo.'
+            : 'Instale a migração offline no Supabase para enviar os registros. Eles continuam salvos neste dispositivo.',
+        ),
+        { code: 'SCHEMA_REQUIRED' },
       );
     throw result.error;
   }
@@ -131,13 +127,16 @@ export const offlineEngine = createOfflineEngine({
   currentUser: offlineUserId,
   online: isOnline,
   changed,
+  // After a fallback, absence is not proof of revocation/deletion. Wait for a
+  // fresh preparation or a new online cycle before pruning confirmed bridges.
+  canReconcile: () => lastCachedRead === null,
 });
-export async function syncOffline() {
+export async function syncOffline(options = {}) {
   if (syncing || !isOnline()) return;
   syncing = true;
   changed();
   try {
-    await offlineEngine.sync();
+    await offlineEngine.sync(options);
   } finally {
     syncing = false;
     changed();
@@ -153,6 +152,16 @@ export async function offlineStatus() {
     cachedAt: lastCachedRead,
     preparedAt: user ? await offlineStore.get(`${user}:prepared`) : null,
     pending: operations.length,
+    queue: operations.map((o) => ({
+      id: o.id,
+      kind: o.payload.kind,
+      createdAt: o.createdAt,
+      attempts: o.attempts || 0,
+      state: o.syncState || 'pending',
+      error: o.error,
+      lastAttemptAt: o.lastAttemptAt,
+      nextAttemptAt: o.nextAttemptAt,
+    })),
     errors: operations.filter((o) => o.error).map((o) => ({ id: o.id, message: o.error })),
   };
 }

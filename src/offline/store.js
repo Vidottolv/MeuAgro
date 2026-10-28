@@ -61,10 +61,19 @@ export function createOfflineStore(name, indexedDB = globalThis.indexedDB) {
         r.onsuccess = () =>
           done(r.result.filter((row) => row.key.startsWith(prefix)).map((row) => row.value));
       }),
-    batch: (puts = [], deletes = []) =>
-      transaction('readwrite', (store) => {
-        for (const [key, value] of puts) store.put({ key, value });
-        for (const key of deletes) store.delete(key);
+    batch: (puts = [], deletes = [], guard = null) =>
+      transaction('readwrite', (store, done) => {
+        const write = () => {
+          for (const [key, value] of puts) store.put({ key, value });
+          for (const key of deletes) store.delete(key);
+          done(true);
+        };
+        if (!guard) return write();
+        const request = store.get(guard.key);
+        request.onsuccess = () => {
+          if ((request.result?.value?.revision ?? null) !== guard.revision) return done(false);
+          write();
+        };
       }),
   };
 }

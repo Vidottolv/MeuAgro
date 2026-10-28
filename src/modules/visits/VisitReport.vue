@@ -92,6 +92,38 @@ function keepFocus(event) {
         <h2>{{ label }}</h2>
         <p class="visit-report-text">{{ visit.anamnesis?.[key] || 'Não informado' }}</p>
       </section>
+      <section v-if="visit.satellite_reference">
+        <h2>Imagem de satélite de referência</h2>
+        <p>
+          {{ visit.satellite_reference.day?.split('-').reverse().join('/') }} •
+          {{ visit.satellite_reference.layer === 'ndvi' ? 'NDVI' : 'Cores naturais (RGB)' }} •
+          {{ visit.area_name || 'Talhão vinculado' }}
+        </p>
+        <p class="visit-report-text">
+          {{ visit.satellite_reference.note || 'Sem observação sobre a imagem.' }}
+        </p>
+        <p>
+          Referência: {{ visit.satellite_reference.image_id }}. Dados Copernicus Sentinel. A imagem
+          não está incorporada neste relatório e sua visualização depende da permissão de acesso
+          vigente.
+        </p>
+      </section>
+      <section v-if="visit.field_observations?.length">
+        <h2>Observações por talhão e cultura</h2>
+        <section v-for="(item, index) in visit.field_observations" :key="item.id">
+          <h3>
+            {{ index + 1 }}. {{ item.area_name }} • {{ item.crop_name || 'Cultura não informada' }}
+          </h3>
+          <p>
+            Prioridade: {{ priorities[item.priority] }} • retorno sugerido:
+            {{ item.next_visit?.split('-').reverse().join('/') || 'Não informado' }}
+          </p>
+          <p class="visit-report-text"><strong>Achados:</strong> {{ item.observation }}</p>
+          <p class="visit-report-text">
+            <strong>Ação recomendada:</strong> {{ item.recommendation || 'Não informada' }}
+          </p>
+        </section>
+      </section>
       <h2>Fotos e observações</h2>
       <p v-if="!photosIncluded">Fotos não incluídas neste compartilhamento.</p>
       <p v-else-if="!photos.length">Nenhuma foto registrada.</p>

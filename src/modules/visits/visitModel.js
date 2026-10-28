@@ -1,3 +1,5 @@
+import { visitSatelliteReference } from './visitSatellite.js';
+import { visitObservations } from './visitObservations.js';
 export const anamnesisFields = [
   ['reason', 'Motivo da visita / queixa principal'],
   ['producer_report', 'Relato do produtor'],
@@ -49,6 +51,24 @@ export function visitPayload(fields) {
       throw Error('O retorno deve ser uma data válida igual ou posterior à visita.');
   }
   return {
+    ...(fields.field_observations !== undefined
+      ? {
+          field_observations: visitObservations(
+            fields.field_observations,
+            fields.property_id,
+            fields.visited_at.slice(0, 10),
+          ),
+        }
+      : {}),
+    ...(fields.satellite_reference
+      ? {
+          satellite_reference: visitSatelliteReference(
+            fields.satellite_reference,
+            fields.property_id,
+            fields.area_id,
+          ),
+        }
+      : {}),
     producer_name: fields.producer_name.trim(),
     site_name: fields.site_name.trim(),
     area_name: (fields.area_name || '').trim().slice(0, 160),

@@ -17,6 +17,7 @@ const { data, loading, error, reload } = useResource(() => detail(props.cycleId)
         ><h2>{{ cycleLabel(data.cycle) }}</h2>
         <p>O resultado estimado considera somente insumos consumidos e vendas registradas.</p>
         <FinanceSummary :summary="data.summary" />
+        <a :href="'/more/costs?cycle='+encodeURIComponent(cycleId)" data-link class="button button--secondary">Ver resultado ampliado deste plantio</a>
         <section class="rural-panel">
           <h3>Margem bruta</h3>
           <p>

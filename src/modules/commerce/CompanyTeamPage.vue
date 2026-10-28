@@ -1,12 +1,12 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   managementCompanies,
   managementTeam,
   managementTeamCommand,
   managementError,
 } from '../../services/managementService.js';
-import { useResource } from '../inventory/shared/useResource';
+import { useSensitiveResource as useResource } from '../shared/useSensitiveResource';
 import { useCommand } from './useCommand';
 import { field, select, when } from './tradeModel';
 import CommandForm from './CommandForm.vue';
@@ -23,6 +23,16 @@ const { data, loading, error, reload } = useResource(async () => {
 const version = ref(0),
   pending = ref(null),
   copied = ref('');
+watch(
+  data,
+  (value) => {
+    if (!value) {
+      pending.value = null;
+      copied.value = '';
+    }
+  },
+  { flush: 'sync' },
+);
 const command = useCommand(
   managementTeamCommand,
   async () => {

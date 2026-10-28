@@ -1,0 +1,12 @@
+project_id = "meuagro"
+
+[functions.satellite-imagery]
+verify_jwt = false
+# JWT is validated on every request using auth.getUser before any privileged action.
+
+[functions.weather-forecast]
+verify_jwt = false
+
+[functions.billing-asaas]
+verify_jwt = false
+# Cada handler autentica usuário ou token de webhook antes de ações privilegiadas.

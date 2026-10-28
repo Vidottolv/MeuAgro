@@ -21,11 +21,16 @@ export const money = (v: number) =>
   Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 export const amount = (v: number) =>
   Number(v || 0).toLocaleString('pt-BR', { maximumFractionDigits: 4 });
+const quantityUnits = (v: number) => Math.round(Number(v) * 10000);
 export function remaining(h: Harvest, id?: string) {
-  return Math.max(
-    0,
-    Number(h.quantity) -
-      (h.sales || []).filter((s) => s.id !== id).reduce((a, s) => a + Number(s.quantity), 0),
+  return (
+    Math.max(
+      0,
+      quantityUnits(h.quantity) -
+        (h.sales || [])
+          .filter((s) => s.id !== id)
+          .reduce((a, s) => a + quantityUnits(s.quantity), 0),
+    ) / 10000
   );
 }
 export function validateHarvest(f: HarvestFields, c?: Cycle, h?: Harvest | null) {
@@ -36,6 +41,8 @@ export function validateHarvest(f: HarvestFields, c?: Cycle, h?: Harvest | null)
     return 'Informe uma data válida, a partir do plantio.';
   const q = quantity(f.quantity);
   if (q === null || q <= 0) return 'Informe uma quantidade maior que zero.';
+  if (h?.sales?.some((s) => f.harvestDate > s.sale_date))
+    return 'A colheita não pode ficar depois de uma venda já registrada.';
   if (!HARVEST_UNITS.some(([v]) => v === f.unit)) return 'Selecione uma unidade válida.';
   if (!HARVEST_DESTINATIONS.some(([v]) => v === f.destination))
     return 'Selecione um destino válido.';
@@ -43,7 +50,7 @@ export function validateHarvest(f: HarvestFields, c?: Cycle, h?: Harvest | null)
     h?.sales?.length &&
     (f.unit !== h.unit ||
       !harvestAllowsSales(f.destination) ||
-      q < h.sales.reduce((a, s) => a + Number(s.quantity), 0))
+      quantityUnits(q) < h.sales.reduce((a, s) => a + quantityUnits(s.quantity), 0))
   )
     return 'Preserve a unidade, o destino de venda e a quantidade já vendida.';
   if (f.qualityClassification.trim().length > 120 || f.notes.trim().length > 1800)
