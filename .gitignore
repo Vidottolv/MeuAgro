@@ -21,6 +21,8 @@ validation-artifacts/
 
 validation/results/
 
+android/**/build/
+
 # iOS: retain the generated project, exclude local builds and signing material.
 ios/App/build/
 ios/App/Pods/
