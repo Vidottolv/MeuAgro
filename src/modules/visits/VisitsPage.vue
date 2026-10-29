@@ -28,6 +28,7 @@ import { visitMatches } from './visitMonitoring.js';
 import { observationsCsv, visitObservations } from './visitObservations.js';
 import TaskBoard from '../tasks/TaskBoard.vue';
 import VisitSatellite from './VisitSatellite.vue';
+import VisitAiAssistant from './VisitAiAssistant.vue';
 import { toDateTimeLocalValue } from '../../js/html.js';
 import RequestState from '../properties/components/RequestState.vue';
 import RuralDialog from '../properties/components/RuralDialog.vue';
@@ -685,6 +686,12 @@ async function saveMorePhotos() {
         @retry="visits.reload"
       >
         <template v-if="selected">
+          <VisitAiAssistant
+            v-if="selected.author_id === offlineUserId()"
+            :key="selected.id"
+            :visit-id="selected.id"
+            :pending="!!selected.offline_pending"
+          />
           <section class="rural-panel">
             <h3>{{ selected.site_name }}</h3>
             <p>{{ selected.producer_name }} • {{ when(selected.visited_at) }}</p>

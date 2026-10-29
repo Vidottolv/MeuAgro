@@ -1,5 +1,8 @@
 project_id = "meuagro"
 
+[functions.technical-assistant]
+verify_jwt = false
+
 [functions.satellite-imagery]
 verify_jwt = false
 # JWT is validated on every request using auth.getUser before any privileged action.

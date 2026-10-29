@@ -9,7 +9,7 @@ let user=null,token=null,handles=[],generation=0,initializing=null;
 let message='';
 const preference=id=>'meuagro.push.'+id;
 const emit=()=>document.dispatchEvent(new CustomEvent('trade-push-updated'));
-export function pushStatus(){return {available:supported()&&configured(),enabled:!!user&&localStorage.getItem(preference(user))==='true',message:message||(!supported()?'Os avisos permanecem disponíveis nesta central. Ative os alertas do celular no aplicativo Android.':!configured()?'Os alertas do celular ainda não foram ativados pelo responsável pelo aplicativo.':'Ative os alertas para acompanhar mensagens, propostas e entregas com o aplicativo fechado.')};}
+export function pushStatus(){return {available:supported()&&configured(),enabled:supported()&&configured()&&!!user&&localStorage.getItem(preference(user))==='true',message:message||(!supported()?(Capacitor.getPlatform()==='ios'?'Os avisos permanecem disponíveis nesta central. Os alertas de compras com o aplicativo fechado no iPhone ainda dependem da integração com o serviço de notificações da Apple.':'Os avisos permanecem disponíveis nesta central. Ative os alertas do celular no aplicativo Android.'):!configured()?'Os alertas do celular ainda não foram ativados pelo responsável pelo aplicativo.':'Ative os alertas para acompanhar mensagens, propostas e entregas com o aplicativo fechado.')};}
 async function listen(){
  if(handles.length)return;
  if(initializing)return initializing;

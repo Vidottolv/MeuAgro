@@ -36,7 +36,7 @@ export function getNotificationPlatformLabel() {
 
   return isAndroid()
     ? 'Android'
-    : Capacitor.getPlatform();
+    : Capacitor.getPlatform() === 'ios' ? 'iOS' : Capacitor.getPlatform();
 }
 
 export function nativeNotificationId(
@@ -300,10 +300,23 @@ export async function syncNativeHarvestNotifications(
     };
   }
 
+  // Keep the nearest reminders and leave one slot for the user's test alert.
+  // Other notification features keep their own pending entries and capacity.
+  const capacity = Capacitor.getPlatform() === 'ios'
+    ? Math.max(0, 63 - (pending.notifications.length - harvestPending.length))
+    : scheduleItems.length;
+  const selectedItems = [...scheduleItems]
+    .sort((a, b) => a.schedule.at.getTime() - b.schedule.at.getTime())
+    .slice(0, capacity);
+  const limitedWarning = selectedItems.length < scheduleItems.length
+    ? `Foram agendados ${selectedItems.length} dos ${scheduleItems.length} lembretes no iPhone. Os próximos têm prioridade. Sincronize novamente ao usar o aplicativo para renovar a agenda.`
+    : null;
+  if (!selectedItems.length) return { native: true, scheduled: 0, permission, exactAlarm, warning: limitedWarning };
+
   const result =
     await LocalNotifications.schedule({
       notifications:
-        scheduleItems,
+        selectedItems,
     });
 
   return {
@@ -311,11 +324,11 @@ export async function syncNativeHarvestNotifications(
     scheduled:
       result.notifications
         ?.length ??
-      scheduleItems.length,
+      selectedItems.length,
     permission,
     exactAlarm,
     warning:
-      result.warning || null,
+      [limitedWarning, result.warning].filter(Boolean).join(' ') || null,
   };
 }
 
@@ -324,7 +337,7 @@ export async function scheduleTestNotification() {
     !isNativeNotificationPlatform()
   ) {
     throw new Error(
-      'O teste nativo estará disponível quando o projeto estiver executando dentro do aplicativo Android.',
+      'O teste nativo está disponível nos aplicativos Android e iOS.',
     );
   }
 

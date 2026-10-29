@@ -20,3 +20,13 @@ release-artifacts/
 validation-artifacts/
 
 validation/results/
+
+# iOS: retain the generated project, exclude local builds and signing material.
+ios/App/build/
+ios/App/Pods/
+ios/**/xcuserdata/
+ios/DerivedData/
+*.p12
+*.p8
+*.mobileprovision
+*.provisionprofile

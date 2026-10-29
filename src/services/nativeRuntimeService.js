@@ -70,6 +70,9 @@ export async function initializeNativeRuntime({
   const launch = await App.getLaunchUrl();
   if (launch?.url) await handleNativeAppUrl(launch.url, { navigate });
 
+  // iOS uses the system back gesture; backButton and exitApp are Android APIs.
+  if (Capacitor.getPlatform() !== 'android') return;
+
   listenerHandles.push(
     await App.addListener(
       'backButton',

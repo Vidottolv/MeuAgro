@@ -129,7 +129,7 @@ export function isNativeCameraPlatform() {
 export async function takePhotoWithCamera() {
   if (!isNative()) {
     throw new Error(
-      'A câmera nativa está disponível no aplicativo Android.',
+      'A câmera nativa está disponível nos aplicativos Android e iOS.',
     );
   }
 

@@ -1,6 +1,7 @@
 .auth-layout {
   display: grid;
   min-height: 100vh;
+  min-height: 100dvh;
   place-items: center;
   padding:
     max(24px, env(safe-area-inset-top))

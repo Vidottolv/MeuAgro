@@ -41,14 +41,21 @@ const permission = (s: string) =>
     denied: 'Negada',
     prompt: 'Aguardando permissão',
     'prompt-with-rationale': 'Aguardando permissão',
-    web: 'Disponível no Android',
+    web: 'Disponível nos aplicativos Android e iOS',
+    not_applicable: 'Não se aplica a este dispositivo',
   })[s] || 'Não verificada';
+function syncMessage(r: any) {
+  const base = r.nativeResult?.native
+    ? `${r.nativeResult.scheduled} lembretes agendados neste dispositivo.`
+    : `${r.queueCount} lembretes preparados.`;
+  return [base, r.nativeResult?.warning].filter(Boolean).join(' ');
+}
 function sync() {
   message.value = '';
   void action.run(
     () => syncHarvestNotifications(),
     (r) => {
-      message.value = `${r.queueCount} lembretes preparados.`;
+      message.value = syncMessage(r);
       void scheduled.reload();
       void runtime.reload();
     },
@@ -92,7 +99,7 @@ function save() {
       void action.run(
         () => syncHarvestNotifications(),
         (r) => {
-          message.value = `Preferências salvas. ${r.queueCount} lembretes preparados.`;
+          message.value = `Preferências salvas. ${syncMessage(r)}`;
           void scheduled.reload();
           void runtime.reload();
         },
@@ -181,7 +188,9 @@ function run(kind: 'permission' | 'exact' | 'test') {
           ><p>
             {{ runtime.data.value.platform }} • {{ permission(runtime.data.value.permission) }}
           </p>
-          <p>Horário exato: {{ permission(runtime.data.value.exactAlarm) }}</p>
+          <p v-if="runtime.data.value.exactAlarm !== 'not_applicable'">
+            Horário exato: {{ permission(runtime.data.value.exactAlarm) }}
+          </p>
           <div v-if="runtime.data.value.native" class="rural-actions">
             <button
               class="button button--secondary"
@@ -190,6 +199,7 @@ function run(kind: 'permission' | 'exact' | 'test') {
             >
               Permitir notificações</button
             ><button
+              v-if="runtime.data.value.exactAlarm !== 'not_applicable'"
               class="button button--secondary"
               :disabled="action.busy.value || mutation.busy.value"
               @click="run('exact')"

@@ -40,7 +40,15 @@
     "test:v035": "node --test tests/v035-workflows.test.mjs",
     "test:offline": "node --test tests/offline.test.mjs tests/offline-database.test.mjs",
     "test:visits": "node --test tests/technical-visits.test.mjs tests/offline.test.mjs",
-    "test:satellite": "node --test tests/satellite.test.mjs"
+    "test:satellite": "node --test tests/satellite.test.mjs",
+    "ios:open": "node scripts/ios.mjs open",
+    "test:mobile": "node --test tests/mobile-platform.test.mjs tests/ios-policy.test.mjs",
+    "ios:sync": "node scripts/ios.mjs sync",
+    "ios:config": "node scripts/ios.mjs config",
+    "ios:doctor": "node scripts/ios.mjs doctor",
+    "ios:setup": "node scripts/ios.mjs setup",
+    "ios:check": "node scripts/ios.mjs check",
+    "ios:run": "node scripts/ios.mjs run"
   },
   "dependencies": {
     "@capacitor/android": "8.5.1",
@@ -48,19 +56,21 @@
     "@capacitor/browser": "8.0.4",
     "@capacitor/camera": "8.2.4",
     "@capacitor/core": "8.5.1",
+    "@capacitor/ios": "8.5.1",
     "@capacitor/local-notifications": "8.3.1",
     "@capacitor/push-notifications": "8.1.2",
     "@capacitor/splash-screen": "8.0.2",
     "@supabase/supabase-js": "2.116.0",
-    "vue": "3.5.43",
     "leaflet": "1.9.4",
-    "proj4": "2.20.2"
+    "proj4": "2.20.2",
+    "vue": "3.5.43"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.1",
     "@electric-sql/pglite": "0.5.8",
     "@vitejs/plugin-vue": "5.2.4",
     "fake-indexeddb": "^6.2.5",
+    "plist": "3.1.1",
     "prettier": "3.9.8",
     "typescript": "5.9.3",
     "vite": "^6.4.3",
