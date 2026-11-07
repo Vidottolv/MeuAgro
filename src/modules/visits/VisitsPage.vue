@@ -231,6 +231,7 @@ function resetFilters() {
 }
 const when = (value) => new Date(value).toLocaleString('pt-BR');
 const native = isNativeCameraPlatform();
+const webCamera = ref(null);
 function exportCsv() {
   exportError.value = '';
   try {
@@ -378,6 +379,14 @@ async function saveMorePhotos() {
 </script>
 <template>
   <div class="rural-vue visits-page">
+    <input
+      ref="webCamera"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      capture="environment"
+      hidden
+      @change="filesSelected"
+    />
     <header class="rural-header">
       <h2>
         {{
@@ -632,11 +641,10 @@ async function saveMorePhotos() {
               problema observado.
             </p>
             <button
-              v-if="native"
               type="button"
               class="button button--secondary"
               :disabled="mutation.busy.value || picking"
-              @click="camera"
+              @click="native ? camera() : webCamera?.click()"
             >
               Tirar foto
             </button>
@@ -811,10 +819,9 @@ async function saveMorePhotos() {
           <section v-if="selected.author_id === offlineUserId()" class="rural-panel">
             <h3>Acrescentar fotos</h3>
             <button
-              v-if="native"
               class="button button--secondary"
               :disabled="photoMutation.busy.value || picking"
-              @click="camera"
+              @click="native ? camera() : webCamera?.click()"
             >
               Tirar foto</button
             ><label class="field"

@@ -1,37 +1,59 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { buildWorker } from '../src/pwa/worker-template.mjs';
+const pwaFiles = [
+  'manifest.webmanifest',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'icons/apple-touch-icon.png',
+];
 export function offlineShell() {
   return {
     name: 'meu-agro-offline-shell',
     enforce: 'post',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const pathname = new URL(req.url || '/', 'http://localhost').pathname.slice(1);
+        if (!pwaFiles.includes(pathname)) return next();
+        res.setHeader(
+          'Content-Type',
+          pathname.endsWith('.png') ? 'image/png' : 'application/manifest+json',
+        );
+        res.end(readFileSync(new URL('../native/pwa/' + pathname, import.meta.url)));
+      });
+    },
     generateBundle(_options, bundle) {
+      // Emit these through Vite as well, so installation waits for every icon.
+      const pwa = pwaFiles;
+      for (const name of pwa)
+        this.emitFile({
+          type: 'asset',
+          fileName: name,
+          source: readFileSync(new URL('../native/pwa/' + name, import.meta.url)),
+        });
       const files = Object.keys(bundle).filter((name) =>
         /\.(html|js|css|svg|png|webp|woff2?)$/.test(name),
       );
       const hash = createHash('sha256')
-        .update(files.join('|') + String(bundle['index.html']?.source || ''))
+        .update(
+          files
+            .map((name) => name + ':' + (bundle[name].code || bundle[name].source || ''))
+            .join('|') +
+            pwa
+              .map((name) =>
+                readFileSync(new URL('../native/pwa/' + name, import.meta.url)).toString('base64'),
+              )
+              .join('|'),
+        )
         .digest('hex')
         .slice(0, 16);
       this.emitFile({
         type: 'asset',
         fileName: 'sw.js',
-        source: `
-const NAME = 'meu-agro-shell-${hash}';
-const ASSETS = ${JSON.stringify(files.map((name) => '/' + name))};
-self.addEventListener('install', event => event.waitUntil(caches.open(NAME).then(cache => cache.addAll(ASSETS))));
-self.addEventListener('activate', event => event.waitUntil((async () => {
-  for (const key of await caches.keys()) if (key.startsWith('meu-agro-shell-') && key !== NAME) await caches.delete(key);
-  await self.clients.claim();
-})()));
-self.addEventListener('fetch', event => {
-  const request = event.request, url = new URL(request.url);
-  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
-  if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(() => caches.open(NAME).then(cache => cache.match('/index.html'))));
-  } else if (ASSETS.includes(url.pathname) && !url.search) {
-    event.respondWith(caches.open(NAME).then(async cache => (await cache.match(request)) || fetch(request)));
-  }
-});
-`,
+        source: buildWorker({
+          version: hash,
+          assets: [...new Set([...files, ...pwa])].map((name) => '/' + name),
+        }),
       });
     },
   };

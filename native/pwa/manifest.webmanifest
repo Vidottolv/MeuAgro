@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "Meu Agro",
+  "short_name": "MeuAgro",
+  "description": "Safra, visitas técnicas e gestão rural em um só lugar.",
+  "lang": "pt-BR",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f4ec",
+  "theme_color": "#1f5d3a",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

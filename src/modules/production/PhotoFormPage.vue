@@ -22,6 +22,7 @@ const {
 } = usePhotoForm(props.cycleId, () => emit('saved'));
 const { data, loading, error, reload } = planting;
 const fileInput = ref<HTMLInputElement | null>(null);
+const cameraInput = ref<HTMLInputElement | null>(null);
 function selected(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0];
   if (file) setFile(file);
@@ -47,10 +48,9 @@ function selected(event: Event) {
         <fieldset :disabled="mutation.busy.value || mutation.done.value || picking">
           <div class="rural-actions">
             <button
-              v-if="native"
               type="button"
               class="button button--primary"
-              @click="pick('camera')"
+              @click="native ? pick('camera') : cameraInput?.click()"
             >
               Tirar foto</button
             ><button
@@ -61,6 +61,14 @@ function selected(event: Event) {
               Escolher imagem
             </button>
           </div>
+          <input
+            ref="cameraInput"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
+            hidden
+            @change="selected"
+          />
           <input
             id="photo-file"
             ref="fileInput"

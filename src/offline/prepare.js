@@ -11,7 +11,7 @@ async function downloadFieldData(progress) {
   if (import.meta.env.PROD && !Capacitor.isNativePlatform()) {
     if (!('serviceWorker' in navigator))
       throw Error(
-        'Este navegador não oferece abertura offline. Use um navegador compatível ou o aplicativo Android.',
+        'Este navegador não oferece abertura offline. Use o Safari atualizado no iPhone, outro navegador compatível ou o aplicativo Android.',
       );
     progress('Preparando a abertura do aplicativo sem internet…');
     let timer;

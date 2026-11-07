@@ -15,7 +15,12 @@ async function run(prepare) {
   message.value = '';
   try {
     if (prepare) {
-      await navigator.storage?.persist?.();
+      // Persistence is best-effort: a refused request must not stop the download.
+      try {
+        await navigator.storage?.persist?.();
+      } catch {
+        /* Browser policy. */
+      }
       await prepareFieldData((text) => {
         message.value = text;
       });
@@ -78,6 +83,10 @@ async function backup() {
       Último preparo concluído: {{ new Date(status.preparedAt).toLocaleString('pt-BR') }}.
     </p>
     <p v-else>Prepare os dados com internet antes de sair para o campo.</p>
+    <p>
+      No iPhone, abra pelo ícone instalado e prepare os dados nesse acesso. Não limpe os dados do
+      navegador nem remova o app enquanto houver pendências.
+    </p>
     <p>
       Consulte propriedades, talhões, plantios e seu histórico de visitas preparados. Novas
       anamneses, eventos e fotos ficam salvos no dispositivo e são enviados quando o aplicativo

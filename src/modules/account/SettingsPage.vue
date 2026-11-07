@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
 import OfflineSettings from '../../offline/OfflineSettings.vue';
+import PwaSettings from '../../pwa/PwaSettings.vue';
 import { useResource } from '../inventory/shared/useResource';
 import { useMutation } from '../production/useMutation';
 import RequestState from '../properties/components/RequestState.vue';
@@ -41,7 +42,7 @@ const permission = (s: string) =>
     denied: 'Negada',
     prompt: 'Aguardando permissão',
     'prompt-with-rationale': 'Aguardando permissão',
-    web: 'Disponível nos aplicativos Android e iOS',
+    web: 'Disponível somente no aplicativo nativo',
     not_applicable: 'Não se aplica a este dispositivo',
   })[s] || 'Não verificada';
 function syncMessage(r: any) {
@@ -125,6 +126,7 @@ function run(kind: 'permission' | 'exact' | 'test') {
 </script>
 <template>
   <div class="rural-vue">
+    <PwaSettings />
     <OfflineSettings />
     <h2>Configurações</h2>
     <section class="rural-panel">

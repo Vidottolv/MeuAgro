@@ -48,7 +48,10 @@
     "ios:doctor": "node scripts/ios.mjs doctor",
     "ios:setup": "node scripts/ios.mjs setup",
     "ios:check": "node scripts/ios.mjs check",
-    "ios:run": "node scripts/ios.mjs run"
+    "ios:run": "node scripts/ios.mjs run",
+    "pwa:check": "node scripts/pwa-build.mjs check",
+    "pwa:build": "node scripts/pwa-build.mjs build",
+    "test:pwa": "node --test tests/pwa.test.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.1",

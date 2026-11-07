@@ -52,7 +52,12 @@
       })();
     </script>
 
-    <link rel="icon" href="data:," />
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="MeuAgro" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
     <link rel="stylesheet" href="/src/css/reset.css" />
     <link rel="stylesheet" href="/src/css/variables.css" />
@@ -83,6 +88,7 @@
   </head>
 
   <body>
+    <div id="pwa-root"></div>
     <div id="app" class="app-root"></div>
 
     <div
