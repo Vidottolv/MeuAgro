@@ -1,3 +1,4 @@
+import { resolveAccessMode } from '../services/accessModeService.js';
 import {createApp} from 'vue';
 import ToastHost from '../modules/shared/ToastHost.vue';
 import PwaNotice from '../pwa/PwaNotice.vue';
@@ -37,7 +38,7 @@ initializeTheme();
 createApp(ToastHost).mount('#toast-container');
 createApp(PwaNotice).mount('#pwa-root');
 
-onAuthStateChange((event) => {
+onAuthStateChange((event, session) => {
   window.setTimeout(() => {
     if (
       event ===
@@ -57,17 +58,11 @@ onAuthStateChange((event) => {
       event ===
       'SIGNED_IN'
     ) {
-      void syncOffline().catch(() => {});
-      void syncHarvestNotifications()
-        .catch(
-          (error) => {
-            console.warn(
-              'Não foi possível sincronizar lembretes após o login:',
-              error,
-            );
-          },
-        );
-
+      void resolveAccessMode(session).then(access => {
+        if (access.mode !== 'full') return;
+        void syncOffline().catch(() => {});
+        void syncHarvestNotifications().catch(() => {});
+      }).catch(() => {});
       /*
        * A própria tela de login e os deep links nativos executam
        * a navegação necessária. Não renderizamos a rota novamente

@@ -1,4 +1,5 @@
 <script setup>
+import { accessMode } from '../../services/accessModeService.js';
 import { computed, ref, watch } from 'vue';
 import { useWorkspace } from '../shared/useWorkspace.js';
 import { workspaceRpc } from '../../services/workspaceService.js';
@@ -78,9 +79,9 @@ async function requestPlan() {
       </button>
       <p v-if="loading">Carregando…</p>
       <template v-if="data"
-        ><ProfileOnboardingPanel />
-        <PermissionsPanel />
-        <section class="rural-panel">
+        ><ProfileOnboardingPanel v-if="accessMode.mode !== 'lite'" />
+        <PermissionsPanel v-if="accessMode.mode !== 'lite'" />
+        <section v-if="accessMode.mode !== 'lite'" class="rural-panel">
           <h3>Importar cadastro de insumos</h3>
           <p>
             Arquivo CSV com separador ponto e vírgula, até 100 linhas. Faça uma cópia da planilha
@@ -157,11 +158,11 @@ async function requestPlan() {
             Conta em implantação, sem assinatura provisionada. Os dados existentes permanecem
             acessíveis.
           </p>
-          <p>
+          <p v-if="accessMode.mode !== 'lite'">
             Pessoas distintas nas empresas de sua titularidade: {{ data.usage.people }}, incluindo
             você. Limite: {{ currentPlan?.seat_limit ?? 'Não provisionado' }}.
           </p>
-          <p>
+          <p v-if="accessMode.mode !== 'lite'">
             Armazenamento identificado da conta:
             {{ (data.usage.storage_bytes / 1048576).toFixed(2) }} MB • referência contratada:
             {{
@@ -170,7 +171,7 @@ async function requestPlan() {
                 : (currentPlan.storage_bytes / 1048576).toFixed(2) + ' MB'
             }}. Este indicador não bloqueia uploads antigos automaticamente.
           </p>
-          <p>
+          <p v-if="accessMode.mode !== 'lite'">
             Satélite: {{ data.satellite?.entitlement?.requests_month ?? 0 }} requisições/mês •
             {{ data.satellite?.entitlement?.pu_month ?? 0 }} PUs/mês. Uso reservado:
             {{ data.satellite?.usage?.requests ?? 0 }} requisições e

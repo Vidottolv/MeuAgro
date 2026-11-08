@@ -1,3 +1,4 @@
+import { resolveAccessMode, liteRouteAllowed } from '../services/accessModeService.js';
 import {scrollToRouteAnchor} from '../modules/shared/routeAnchor.js';
 import {setPushSession} from '../services/tradePushService.js';
 const renderManagement = async c => (await import('../modules/commerce/mount.js')).renderManagement(c);
@@ -158,6 +159,10 @@ const privateRoute = (render) => ({
 });
 
 const routes = {
+  '/consultor/lite': privateRoute(async c => (await import('../modules/lite/mount.js')).renderLite(c)),
+  '/consultor/lite/vendas': privateRoute(async c => (await import('../modules/lite/mount.js')).renderLite(c)),
+  '/consultor/lite/comissoes': privateRoute(async c => (await import('../modules/lite/mount.js')).renderLite(c)),
+  '/consultor/lite/conta': privateRoute(async c => (await import('../modules/lite/mount.js')).renderLite(c)),
   '/help': { render: async context => (await import('../modules/account/mount.js')).renderHelpPage(context), requiresAuth: false },
   '/more/help': privateRoute(async context => (await import('../modules/account/mount.js')).renderHelpPage(context)),
   '/more/operations': privateRoute(async ({session}) => {
@@ -1014,11 +1019,31 @@ export async function renderRoute() {
       );
     }
 
-    setTradeNotificationSession(session);
-    setPushSession(session);
+    let access;
+    try { access = await resolveAccessMode(session); }
+    catch (error) {
+      setTradeNotificationSession(null); setPushSession(null);
+      const root = document.getElementById('app');
+      root.replaceChildren();
+      const panel = document.createElement('section'); panel.className = 'rural-panel';
+      const message = document.createElement('p'); message.setAttribute('role','alert'); message.textContent = error.message;
+      const retry = document.createElement('button'); retry.className = 'button'; retry.textContent = 'Tentar novamente'; retry.onclick = () => { void renderRoute(); };
+      const help = document.createElement('a'); help.href='/help'; help.textContent='Abrir ajuda pública';
+      panel.append(message,retry,help); root.append(panel); return;
+    }
+    setTradeNotificationSession(access.mode === 'lite' ? null : session);
+    setPushSession(access.mode === 'lite' ? null : session);
     const path =
       getCurrentPath();
 
+    if (session && access.mode === 'lite' && !liteRouteAllowed(path)) {
+      navigate('/consultor/lite', { replace: true });
+      return;
+    }
+    if (session && access.mode === 'full' && path.startsWith('/consultor/lite')) {
+      navigate('/consultor', { replace: true });
+      return;
+    }
     if (path === '/') {
       navigate(
         session

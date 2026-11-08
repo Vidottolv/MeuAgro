@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onScopeDispose } from 'vue';
 import { tradeUnreadCount } from '../../services/tradeNotificationService.js';
+import { accessMode } from '../../services/accessModeService.js';
 import AppIcon from './AppIcon.vue';
 import OfflineBanner from '../../offline/OfflineBanner.vue';
 const props = withDefaults(
@@ -23,6 +24,12 @@ const initials = computed(() => {
   const p = n.split(/\s+/);
   return (p.length > 1 ? p[0][0] + p[p.length - 1][0] : p[0].slice(0, 2)).toUpperCase();
 });
+const liteItems = [
+  ['/consultor/lite', 'chart', 'Resumo'],
+  ['/consultor/lite/vendas', 'clipboard', 'Vendas'],
+  ['/consultor/lite/comissoes', 'briefcase', 'Comissões'],
+  ['/consultor/lite/conta', 'more', 'Conta'],
+];
 const items = [
   { key: 'home', label: 'Início', path: '/dashboard', icon: 'home' },
   { key: 'properties', label: 'Propriedades', path: '/properties', icon: 'map' },
@@ -44,6 +51,7 @@ const commercial = [
           <p class="app-topbar__eyebrow">{{ eyebrow }}</p>
           <h1 class="app-topbar__title">{{ title }}</h1>
           <button
+            v-if="accessMode.mode !== 'lite'"
             type="button"
             class="button commerce-mode-button"
             :data-app-route="activeNav === 'commerce' ? '/dashboard' : '/consultor'"
@@ -63,6 +71,7 @@ const commercial = [
             >?</a
           >
           <a
+            v-if="accessMode.mode !== 'lite'"
             href="/notificacoes/compras"
             class="trade-bell"
             :aria-label="'Avisos de compras' + (count ? ', ' + count + ' não lidos' : '')"
@@ -81,10 +90,28 @@ const commercial = [
         </div>
       </header>
     </div>
-    <OfflineBanner />
+    <OfflineBanner v-if="accessMode.mode !== 'lite'" />
     <main class="app-content"><slot /></main>
     <div class="bottom-nav-wrap">
-      <nav v-if="activeNav === 'commerce'" class="commerce-nav" aria-label="Navegação comercial">
+      <nav
+        v-if="accessMode.mode === 'lite'"
+        class="lite-nav commerce-nav"
+        aria-label="Consultor Lite"
+      >
+        <a
+          v-for="[href, icon, label] in liteItems"
+          :key="href"
+          :href="href"
+          :aria-current="path === href ? 'page' : undefined"
+          data-link
+          ><AppIcon :name="icon" /><span>{{ label }}</span></a
+        >
+      </nav>
+      <nav
+        v-else-if="activeNav === 'commerce'"
+        class="commerce-nav"
+        aria-label="Navegação comercial"
+      >
         <a
           v-for="[href, name, label] in commercial"
           :key="href"
@@ -114,6 +141,10 @@ const commercial = [
   </div>
 </template>
 <style scoped>
+.lite-nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
 .help-shortcut {
   display: grid;
   place-items: center;

@@ -1,5 +1,6 @@
 export const helpVersion = '08/11/2026';
 export const helpCategories = [
+  { id: 'lite', title: 'Consultor Lite', description: 'Vendas próprias, parcelas e comissões.' },
   {
     id: 'comecar',
     title: 'Começar e acessar',
@@ -66,6 +67,60 @@ const item = (
 // This handbook describes current screens, not promised features or fixed prices.
 // It contains no account data, credentials or backend operations and is precached.
 export const helpArticles = [
+  item(
+    'lite',
+    'lite',
+    'Como funciona o Consultor Lite',
+    '/consultor/lite',
+    'Plano exclusivo para vendas e comissões do consultor.',
+    [
+      'A conta precisa ser provisionada no plano Lite pelo administrador ou pela contratação disponível.',
+      'Use Resumo para consultar vendas e comissões do mês; use Vendas para cadastrar ou corrigir lançamentos.',
+      'O Lite tem navegação própria e não oferece modo produtor.',
+    ],
+    [
+      'O plano não inclui estoque, equipe, visitas técnicas, IA ou satélite. Nenhum dado antigo é apagado ao mudar de plano.',
+    ],
+    ['plano', 'lite', 'consultor'],
+  ),
+  item(
+    'lite-vendas',
+    'lite',
+    'Cadastrar vendas no Lite',
+    '/consultor/lite/vendas',
+    'Informe produtor, itens e condições do negócio.',
+    [
+      'Abra Vendas e Nova venda. Informe nome do produtor e data.',
+      'Adicione produtos, quantidade, unidade e preço unitário; não use separador de milhar nos valores.',
+      'Escolha forma de pagamento, número de vezes e comissão percentual ou fixa.',
+      'Gere as parcelas e ajuste as datas previstas de recebimento de comissão antes de salvar.',
+    ],
+    [
+      'A comissão total é dividida entre as parcelas com ajuste exato dos centavos. O nome do produtor não cria uma conta para ele.',
+      'Os registros são próprios do consultor e não movimentam estoque ou geram cobranças para o produtor.',
+    ],
+    ['produto', 'parcelamento', 'comissao'],
+  ),
+  item(
+    'lite-recebimentos',
+    'lite',
+    'Previsão e recebimento de comissões',
+    '/consultor/lite/comissoes',
+    'Separe o que espera receber do que já recebeu.',
+    [
+      'Em Comissões, selecione o mês para ver previsões de 12 meses e o histórico dos últimos 12 meses.',
+      'Em Vendas, selecione o mês da venda e abra Parcelas e recebimentos de comissão.',
+      'Clique em Registrar recebimento e informe valor e data reais. Você pode receber parte da parcela.',
+      'Para corrigir, estorne o recebimento com um motivo. Para cancelar a venda, estorne primeiro todos os recebimentos ativos.',
+    ],
+    [
+      'Comissão gerada usa a data da venda. Comissão recebida usa a data real do recebimento. A previsão mostra o saldo pendente na data esperada.',
+      'Vendas com histórico de recebimento não podem ser editadas: estorne, cancele e registre uma substituição. O histórico é preservado.',
+      'Use conexão para consultar e salvar. Com o plano vencido, o histórico pode ser consultado; alterações exigem renovação.',
+    ],
+    ['previsao', 'comissao', 'recebimento', 'estorno'],
+  ),
+
   item(
     'primeiros-passos',
     'comecar',
