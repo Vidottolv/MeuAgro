@@ -170,6 +170,11 @@ const groups = [
     description: 'Plano, preferências e cuidado com seus dados.',
     items: [
       {
+        title: 'Central de ajuda',
+        description: 'Como usar todas as funcionalidades, por tema e com busca',
+        href: '/more/help',
+      },
+      {
         title: 'Começar e gerenciar plano',
         description: 'Roteiro por perfil, importação e utilização da conta',
         href: '/more/account-plan',

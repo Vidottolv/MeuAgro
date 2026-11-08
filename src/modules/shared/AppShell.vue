@@ -55,6 +55,14 @@ const commercial = [
         </div>
         <div class="app-topbar__actions">
           <a
+            href="/more/help"
+            class="button button--secondary help-shortcut"
+            aria-label="Abrir central de ajuda"
+            title="Central de ajuda"
+            data-link
+            >?</a
+          >
+          <a
             href="/notificacoes/compras"
             class="trade-bell"
             :aria-label="'Avisos de compras' + (count ? ', ' + count + ' não lidos' : '')"
@@ -105,3 +113,13 @@ const commercial = [
     </div>
   </div>
 </template>
+<style scoped>
+.help-shortcut {
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  min-height: 44px;
+  padding: 0.5rem;
+  font-weight: 800;
+}
+</style>

@@ -5,6 +5,7 @@ const pwaFiles = [
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',
+  'icons/icon-maskable-512.png',
   'icons/apple-touch-icon.png',
 ];
 export function offlineShell() {

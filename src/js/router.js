@@ -158,6 +158,8 @@ const privateRoute = (render) => ({
 });
 
 const routes = {
+  '/help': { render: async context => (await import('../modules/account/mount.js')).renderHelpPage(context), requiresAuth: false },
+  '/more/help': privateRoute(async context => (await import('../modules/account/mount.js')).renderHelpPage(context)),
   '/more/operations': privateRoute(async ({session}) => {
     const {withShell}=await import('../modules/shared/mountShell.js');
     const {default:Page}=await import('../modules/operations/OperationsPage.vue');

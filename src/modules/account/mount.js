@@ -12,6 +12,13 @@ export const renderLoginPage = () => auth('login');
 export const renderRegisterPage = () => auth('register');
 export const renderForgotPasswordPage = () => auth('forgot');
 export const renderResetPasswordPage = () => auth('reset');
+export async function renderHelpPage({ session } = {}) {
+  const { default: Page } = await import('../help/HelpPage.vue');
+  if (session) return mount(session, Page, 'Ajuda', {});
+  const app = createApp(Page, { publicMode: true });
+  app.mount('#app');
+  return () => app.unmount();
+}
 async function mount(session, Page, title, props, activeNav = 'more') {
   const createApp = withShell({
     session,

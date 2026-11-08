@@ -11,7 +11,7 @@ export function authBrand({
         class="brand__mark"
         aria-hidden="true"
       >
-        🌱
+        <img src="/icons/icon-512.png" alt="" width="64" height="64" />
       </div>
 
       <div>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+  <title>MeuAgro — broto</title>
+  <defs>
+    <linearGradient id="left" x1="0" x2="1"><stop stop-color="#a5e448"/><stop offset=".5" stop-color="#79bd29"/><stop offset="1" stop-color="#408c24"/></linearGradient>
+    <linearGradient id="right" x1="0" x2="1"><stop stop-color="#62a725"/><stop offset=".45" stop-color="#b7e95d"/><stop offset="1" stop-color="#8bd435"/></linearGradient>
+    <linearGradient id="stem" x1="0" x2="1"><stop stop-color="#54852e"/><stop offset="1" stop-color="#a4ca56"/></linearGradient>
+    <linearGradient id="soil" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#c98c63"/><stop offset=".5" stop-color="#9c624a"/><stop offset="1" stop-color="#754c3e"/></linearGradient>
+  </defs>
+  <rect width="100" height="100" fill="#1f5d3a"/>
+  <path d="M48 67C48 57 49 47 45 39L50 38C54 48 53 59 53 67Z" fill="url(#stem)"/>
+  <path d="M49 41C36 44 27 40 26 29C38 28 49 30 49 41Z" fill="url(#left)"/>
+  <path d="M50 49C50 39 59 35 74 37C73 47 64 51 50 49Z" fill="url(#right)"/>
+  <path d="M34 75C37 64 42 60 50 60C58 60 63 65 66 75Z" fill="url(#soil)"/>
+</svg>
